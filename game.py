@@ -25,16 +25,6 @@ pygame.display.set_caption("The Legend of Zelda")
 
 ghost = pygame.image.load("ghost.png").convert_alpha()
 
-# screen.blit(player.image, player.rect)
-
-# sword.rect = sword.image.get_rect()
-# sword.rect.center = (sword.x, sword.y)
-# sword.load_sword()
-# screen.blit(sword.image, sword.rect)
-# sword.x = -1000
-# sword.y = -1000
-# screen.blit(player.image, player.rect)
-
 class Level:
     def __init__(self):
         self.Screen = screen
@@ -61,7 +51,6 @@ class Object:
         
         if self.direction == None:
             self.direction = self.choices[random.randint(0,len(self.choices)-1)]
-
         
         if self.direction=='R':
             
@@ -77,8 +66,7 @@ class Object:
                 self.x -=speed
                 self.rect.center = (self.x, self.y)
             else:
-                self.direction = 'R'
-               
+                self.direction = 'R'               
                 
         elif self.direction == 'U':
             
@@ -87,7 +75,8 @@ class Object:
                 self.y -=speed
                 self.rect.center = (self.x, self.y)
             else:
-                self.direction = 'D'  
+                self.direction = 'D'
+
         elif self.direction == 'D':
             
             if self.y + speed < HEIGHT- .5*self.size:
@@ -96,13 +85,6 @@ class Object:
                 self.rect.center = (self.x, self.y)
             else:
                 self.direction = 'U'
-                
-
-
-
-
-
-
 
 G = Object(ghost, 700,700,100)
 Level1 = Level()
