@@ -28,9 +28,7 @@ ghost = pygame.image.load("ghost.png").convert_alpha()
 class Level:
     def __init__(self):
         self.Screen = screen
-
-        self.enemies = pygame.sprite.Group()
-        self.objects = pygame.sprite.Group()
+        
 
 class Object:
     def __init__(self, image, x,y, size):
@@ -43,26 +41,47 @@ class Object:
         self.rect.center = (self.x, self.y)
         self.direction = None
         self.choices = ['U','D','L','R']
-        
+                
     def rescale(self):
         self.image = pygame.transform.scale(self.image, (self.size, self.size))
+    def collide(self, x, y):
+        '''
+        Discovers collisions, returns True if collision exists
+        Going to take in x, y coordinates, compare them to other objects
+        '''
+        # TODO
+        # Take in list of objects and their x,y coordinates, check if current objects coordinates
+        # collide with any of the other objects, enemies, etc
+        # return True if there is a collision
+        pass
 
     def move(self, speed):
         
         if self.direction == None:
             self.direction = self.choices[random.randint(0,len(self.choices)-1)]
-        
+               
+
         if self.direction=='R':
-            
-            if self.x + speed <=WIDTH - .5*self.size: 
-                self.x +=speed            
+            curr = self.x + speed
+            # collision with objects
+            if self.collide(curr, self.y) == True:
+                self.direction = None
+                return  
+            # collision with edge of level
+            if curr <=WIDTH - .5*self.size: 
+                self.x +=speed
                 self.rect.center = (self.x, self.y)
             else:                
                 self.direction = 'L'
 
         elif self.direction == 'L':
             
-            if self.x - speed >0+.5*self.size:
+            curr = self.x - speed
+            if self.collide(curr, self.y) == True:
+                self.direction = None
+                return      
+
+            if curr >0+.5*self.size:
                 self.x -=speed
                 self.rect.center = (self.x, self.y)
             else:
@@ -70,17 +89,24 @@ class Object:
                 
         elif self.direction == 'U':
             
-            if self.y - speed >0 + .5*self.size:           
-            
+            curr = self.y - speed
+            if self.collide(self.x, curr) == True:
+                self.direction = None
+                return      
+
+            if curr >0 + .5*self.size:           
                 self.y -=speed
                 self.rect.center = (self.x, self.y)
             else:
                 self.direction = 'D'
 
         elif self.direction == 'D':
-            
-            if self.y + speed < HEIGHT- .5*self.size:
+            curr = self.y + speed
+            if self.collide(self.x, curr) == True:
+                self.direction = None
+                return  
 
+            if curr < HEIGHT- .5*self.size:
                 self.y +=speed
                 self.rect.center = (self.x, self.y)
             else:
