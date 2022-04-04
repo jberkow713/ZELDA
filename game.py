@@ -25,6 +25,9 @@ pygame.display.set_caption("The Legend of Zelda")
 
 ghost = pygame.image.load("ghost.png").convert_alpha()
 
+Object_Count = 0
+Objects = []
+
 class Level:
     def __init__(self):
         self.Screen = screen
@@ -41,16 +44,31 @@ class Object:
         self.rect.center = (self.x, self.y)
         self.direction = None
         self.choices = ['U','D','L','R']
-                
+        self.Obj_num = self.obj_num()
+    
+    def obj_num(self):
+        global Object_Count
+        Obj_Num = Object_Count
+        Object_Count +=1
+        Objects.append((self.x,self.y, self.size))
+        return Obj_Num
+        
+
     def rescale(self):
         self.image = pygame.transform.scale(self.image, (self.size, self.size))
-    def collide(self, x, y):
+    
+    def collide(self, x,y):
         '''
         Discovers collisions, returns True if collision exists
-        Going to take in x, y coordinates, compare them to other objects
+        Going to compare x y coords and size to all other items in the object list
         '''
+        # This is now a list of all other objects outside of itself
+        Other_Objects = Objects.copy()
+        Other_Objects.remove(Other_Objects[self.Obj_num])
+        print(Other_Objects)
+        
         # TODO
-        # Take in list of objects and their x,y coordinates, check if current objects coordinates
+        # Take in list of other objects and their x,y coordinates and size, check if current objects coordinates
         # collide with any of the other objects, enemies, etc
         # return True if there is a collision
         pass
@@ -59,7 +77,8 @@ class Object:
         
         if self.direction == None:
             self.direction = self.choices[random.randint(0,len(self.choices)-1)]
-               
+        
+        Objects[self.Obj_num] = (self.x, self.y, self.size)         
 
         if self.direction=='R':
             curr = self.x + speed
@@ -112,8 +131,10 @@ class Object:
             else:
                 self.direction = 'U'
 
-G = Object(ghost, 700,700,100)
 Level1 = Level()
+G = Object(ghost, 700,700,100)
+G2 = Object(ghost, 500,500, 100)
+
 
 while True:
     clock.tick(FPS)
@@ -122,9 +143,12 @@ while True:
             sys.exit() 
 
     Level1.Screen.fill(GROUND_COLOR)
-        
+    
+    G2.move(4)    
     G.move(4)
-    Level1.Screen.blit(G.image, G.rect)  
+    Level1.Screen.blit(G.image, G.rect)
+    Level1.Screen.blit(G2.image, G2.rect)
+
 
     pygame.display.flip()
 
