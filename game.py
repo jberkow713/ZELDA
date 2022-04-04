@@ -69,7 +69,7 @@ class Object:
                 return  
             # collision with edge of level
             if curr <=WIDTH - .5*self.size: 
-                self.x +=speed
+                self.x = curr
                 self.rect.center = (self.x, self.y)
             else:                
                 self.direction = 'L'
@@ -82,7 +82,7 @@ class Object:
                 return      
 
             if curr >0+.5*self.size:
-                self.x -=speed
+                self.x = curr
                 self.rect.center = (self.x, self.y)
             else:
                 self.direction = 'R'               
@@ -95,7 +95,7 @@ class Object:
                 return      
 
             if curr >0 + .5*self.size:           
-                self.y -=speed
+                self.y = curr
                 self.rect.center = (self.x, self.y)
             else:
                 self.direction = 'D'
@@ -107,7 +107,7 @@ class Object:
                 return  
 
             if curr < HEIGHT- .5*self.size:
-                self.y +=speed
+                self.y = curr
                 self.rect.center = (self.x, self.y)
             else:
                 self.direction = 'U'
