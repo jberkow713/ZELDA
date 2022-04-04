@@ -1,3 +1,4 @@
+from re import L
 import pygame
 import random
 import sys
@@ -28,10 +29,29 @@ ghost = pygame.image.load("ghost.png").convert_alpha()
 Object_Count = 0
 Objects = []
 
+def find_boundaries(x,y, size):
+    x_bounds = int(x -.5*size), int(x + .5*size)
+    y_bounds = int(y-.5*size), int(y+.5*size)
+
+    return x_bounds, y_bounds
+
+def collision(a,b):
+    
+    in_between = False
+    if a[0][0] >=b[0][0] and a[0][0]<= b[0][1]:
+        in_between=True
+    if a[0][1]>=b[0][0] and a[0][1]<=b[0][1]:
+        in_between=True    
+
+    if in_between == True:
+        if a[1][0] >=b[1][0] and a[1][0] <=b[1][1]:
+            return True
+        if a[1][1] >=b[1][0] and a[1][1] <=b[1][1]:
+            return True   
+
 class Level:
     def __init__(self):
-        self.Screen = screen
-        
+        self.Screen = screen       
 
 class Object:
     def __init__(self, image, x,y, size):
@@ -51,8 +71,7 @@ class Object:
         Obj_Num = Object_Count
         Object_Count +=1
         Objects.append((self.x,self.y, self.size))
-        return Obj_Num
-        
+        return Obj_Num        
 
     def rescale(self):
         self.image = pygame.transform.scale(self.image, (self.size, self.size))
@@ -65,13 +84,14 @@ class Object:
         # This is now a list of all other objects outside of itself
         Other_Objects = Objects.copy()
         Other_Objects.remove(Other_Objects[self.Obj_num])
-        print(Other_Objects)
         
-        # TODO
-        # Take in list of other objects and their x,y coordinates and size, check if current objects coordinates
-        # collide with any of the other objects, enemies, etc
-        # return True if there is a collision
-        pass
+        location = find_boundaries(x,y,self.size)        
+        
+        for object in Other_Objects:
+            # Other object locations
+            Loc = find_boundaries(object[0], object[1], object[2])
+            if collision(location, Loc)==True:
+                return True              
 
     def move(self, speed):
         
@@ -84,7 +104,7 @@ class Object:
             curr = self.x + speed
             # collision with objects
             if self.collide(curr, self.y) == True:
-                self.direction = None
+                self.direction = 'L'
                 return  
             # collision with edge of level
             if curr <=WIDTH - .5*self.size: 
@@ -97,7 +117,7 @@ class Object:
             
             curr = self.x - speed
             if self.collide(curr, self.y) == True:
-                self.direction = None
+                self.direction = 'R'
                 return      
 
             if curr >0+.5*self.size:
@@ -110,7 +130,7 @@ class Object:
             
             curr = self.y - speed
             if self.collide(self.x, curr) == True:
-                self.direction = None
+                self.direction = 'D'
                 return      
 
             if curr >0 + .5*self.size:           
@@ -122,7 +142,7 @@ class Object:
         elif self.direction == 'D':
             curr = self.y + speed
             if self.collide(self.x, curr) == True:
-                self.direction = None
+                self.direction = 'U'
                 return  
 
             if curr < HEIGHT- .5*self.size:
@@ -144,8 +164,8 @@ while True:
 
     Level1.Screen.fill(GROUND_COLOR)
     
-    G2.move(4)    
-    G.move(4)
+    G2.move(6)    
+    G.move(6)
     Level1.Screen.blit(G.image, G.rect)
     Level1.Screen.blit(G2.image, G2.rect)
 
