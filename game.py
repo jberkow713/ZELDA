@@ -55,17 +55,40 @@ class Level:
         self.starting_x = starting_x
         self.Enemy_List = []
         self.set_landscape()
-        self.set_enemies()        
+        self.set_enemies()
+            
     
     def set_landscape(self):
         pass
 
     def set_enemies(self):
         # TODO, improve placement, randomize, within walls, avoid objects, avoid enemies, etc
-
+        
         for _ in range(self.enemies):
-            self.Enemy_List.append(Object(ghost, (self.starting_x),random.randint(175,HEIGHT-175),100))
-            self.starting_x += WIDTH/self.enemies-Object.Wall_Depth/self.enemies    
+            SIZE = 100
+            Buffer = int(Object.Wall_Depth+.5*SIZE)
+            if len(Objects)==0:
+                New = Object(ghost, (random.randint(Buffer, WIDTH-Buffer)),\
+                random.randint(Buffer,HEIGHT-Buffer),SIZE)
+                self.Enemy_List.append(New)
+
+            else:
+                while True:
+                    
+                    New = Object(ghost, (random.randint(Buffer, WIDTH-Buffer)),\
+                    random.randint(Buffer,HEIGHT-Buffer),SIZE)
+                    
+                    if New.collide(New.x, New.y)==False:
+                        self.Enemy_List.append(New)
+                        break
+                    else:
+                        print('triggered')
+                        global Object_Count
+                        Object_Count -=1                        
+                        Objects.remove(Objects[New.Obj_num])    
+                                                
+
+               
 
 # TODO setup the wall class, these are not stored in object list, not checked for collisions,
 # They affect the Object.Wall_Depth, so when setting up the level, set enemies outside walls
@@ -116,7 +139,7 @@ class Object:
             Loc = find_boundaries(object[0], object[1], object[2])
             if collision(location, Loc)==True:
                 return True              
-
+        return False
     def move(self, speed):
         
         if self.direction == None:
@@ -176,6 +199,7 @@ class Object:
                 self.direction = 'U'
 
 L = Level(5, 175)
+
 
 while True:
     clock.tick(FPS)
