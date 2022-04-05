@@ -65,6 +65,11 @@ class Level:
         for _ in range(self.enemies):
             self.Enemy_List.append(Object(ghost, (self.starting_x),random.randint(175,HEIGHT-175),100, True))
             self.starting_x += WIDTH/self.enemies-Object.Wall_Depth/self.enemies    
+# TODO setup the wall class, these are not stored in object list, not checked for collisions,
+# They affect the Object.Wall_Depth, so when setting up the level, set enemies outside walls
+
+class Wall:
+    pass
 
 class Object:
     Wall_Depth = 100
