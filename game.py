@@ -26,6 +26,7 @@ pygame.display.set_caption("The Legend of Zelda")
 
 ghost = pygame.image.load("ghost.png").convert_alpha()
 tree = pygame.image.load("TREE_PNG.png").convert_alpha()
+wall = pygame.image.load("Zelda_Wall.jpg").convert_alpha()
 
 Object_Count = 0
 Objects = []
@@ -71,8 +72,8 @@ class Level:
         for _ in range(self.enemies):
             Enemy_SIZE = 75
             Tree_Size = 45
-            Enemy_Buffer = int(Object.Wall_Depth+.5*Enemy_SIZE)
-            Obj_Buffer = int(Object.Wall_Depth+.5*Tree_Size)
+            Enemy_Buffer = int(Wall.Wall_Depth+.5*Enemy_SIZE)
+            Obj_Buffer = int(Wall.Wall_Depth+.5*Tree_Size)
             if len(Objects)==0:
                 New = Object(ghost, (random.randint(Enemy_Buffer, WIDTH-Enemy_Buffer)),\
                 random.randint(Enemy_Buffer,HEIGHT-Enemy_Buffer),Enemy_SIZE,True)
@@ -103,17 +104,33 @@ class Level:
                     break
                 else:                    
                     Object_Count -=1                        
-                    Objects.remove(Objects[New.Obj_num])        
+                    Objects.remove(Objects[New.Obj_num])
+        
+        # TODO create walls
+
 
 # TODO setup the wall class, these are not stored in object list, not checked for collisions,
 # They affect the Object.Wall_Depth, so when setting up the level, set enemies outside walls
 # Non enemy objects will be added to object list, but not level enemy list
 
 class Wall:
-    pass
+    Wall_Depth = 100
+    
+    def __init__(self, image, x,y,size):
+        self.image = image
+        self.x = x
+        self.y = y
+        self.size = size
+        self.rescale()
+        self.rect = self.image.get_rect()
+        self.rect.center = (self.x, self.y)
+
+    def rescale(self):
+        self.image = pygame.transform.scale(self.image, (self.size, self.size))   
+
 
 class Object:
-    Wall_Depth = 100
+    
     
     def __init__(self, image, x,y, size,can_move=False):
         self.x = x
@@ -171,7 +188,7 @@ class Object:
                 self.direction = random_choice
                 return  
             # collision with edge of level
-            if curr <=WIDTH - .5*self.size-Object.Wall_Depth: 
+            if curr <=WIDTH - .5*self.size-Wall.Wall_Depth: 
                 self.x = curr
                 self.rect.center = (self.x, self.y)
             else:                
@@ -184,7 +201,7 @@ class Object:
                 self.direction = random_choice
                 return      
 
-            if curr >0+.5*self.size+Object.Wall_Depth:
+            if curr >0+.5*self.size+Wall.Wall_Depth:
                 self.x = curr
                 self.rect.center = (self.x, self.y)
             else:
@@ -197,7 +214,7 @@ class Object:
                 self.direction = random_choice
                 return      
 
-            if curr >0 + .5*self.size+ Object.Wall_Depth:           
+            if curr >0 + .5*self.size+ Wall.Wall_Depth:           
                 self.y = curr
                 self.rect.center = (self.x, self.y)
             else:
@@ -209,13 +226,15 @@ class Object:
                 self.direction = random_choice
                 return  
 
-            if curr < HEIGHT- .5*self.size-Object.Wall_Depth:
+            if curr < HEIGHT- .5*self.size-Wall.Wall_Depth:
                 self.y = curr
                 self.rect.center = (self.x, self.y)
             else:
                 self.direction = 'U'
 
 L = Level(20, 20)
+w = Wall(wall,0,0,100)
+w1 = Wall(wall, 0,50,100)
 
 while True:
     clock.tick(FPS)
@@ -224,6 +243,9 @@ while True:
             sys.exit() 
     screen.fill(GROUND_COLOR)
     
+    # screen.blit(w.image, w.rect)
+    # screen.blit(w1.image, w1.rect)
+
     for enemy in L.Enemy_List:
         if enemy.can_move==True:
             enemy.move(random.randint(4,6))
