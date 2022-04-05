@@ -50,8 +50,17 @@ def collision(a,b):
             return True   
 
 class Level:
-    def __init__(self):
-        self.Screen = screen       
+    def __init__(self, enemies, starting_x):
+        self.enemies = enemies
+        self.starting_x = starting_x
+        self.Enemy_List = []
+        self.set_room()        
+
+    def set_room(self):
+        
+        for _ in range(self.enemies):
+            self.Enemy_List.append(Object(ghost, (self.starting_x),random.randint(100,HEIGHT-100),100))
+            self.starting_x += WIDTH/self.enemies    
 
 class Object:
     def __init__(self, image, x,y, size):
@@ -151,25 +160,19 @@ class Object:
             else:
                 self.direction = 'U'
 
-Level1 = Level()
-G = Object(ghost, 700,700,100)
-G2 = Object(ghost, 500,500, 100)
-
+L = Level(5, 100)
 
 while True:
     clock.tick(FPS)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit() 
+    screen.fill(GROUND_COLOR)
 
-    Level1.Screen.fill(GROUND_COLOR)
-    
-    G2.move(6)    
-    G.move(6)
-    Level1.Screen.blit(G.image, G.rect)
-    Level1.Screen.blit(G2.image, G2.rect)
-
-
+    for enemy in L.Enemy_List:
+        enemy.move(random.randint(4,6))
+        screen.blit(enemy.image, enemy.rect)
+        
     pygame.display.flip()
 
 
