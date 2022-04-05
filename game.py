@@ -55,8 +55,7 @@ class Level:
         self.starting_x = starting_x
         self.Enemy_List = []
         self.set_landscape()
-        self.set_enemies()
-            
+        self.set_enemies()            
     
     def set_landscape(self):
         pass
@@ -82,13 +81,9 @@ class Level:
                         self.Enemy_List.append(New)
                         break
                     else:
-                        print('triggered')
                         global Object_Count
                         Object_Count -=1                        
-                        Objects.remove(Objects[New.Obj_num])    
-                                                
-
-               
+                        Objects.remove(Objects[New.Obj_num])               
 
 # TODO setup the wall class, these are not stored in object list, not checked for collisions,
 # They affect the Object.Wall_Depth, so when setting up the level, set enemies outside walls
@@ -110,8 +105,7 @@ class Object:
         self.rect.center = (self.x, self.y)
         self.direction = None
         self.choices = ['U','D','L','R']
-        self.Obj_num = self.obj_num()
-        
+        self.Obj_num = self.obj_num()        
     
     def obj_num(self):
         global Object_Count
@@ -199,7 +193,6 @@ class Object:
                 self.direction = 'U'
 
 L = Level(5, 175)
-
 
 while True:
     clock.tick(FPS)
