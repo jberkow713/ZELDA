@@ -63,10 +63,12 @@ class Level:
     def set_enemies(self):
         
         for _ in range(self.enemies):
-            self.Enemy_List.append(Object(ghost, (self.starting_x),random.randint(100,HEIGHT-100),100, True))
-            self.starting_x += WIDTH/self.enemies    
+            self.Enemy_List.append(Object(ghost, (self.starting_x),random.randint(175,HEIGHT-175),100, True))
+            self.starting_x += WIDTH/self.enemies-Object.Wall_Depth/self.enemies    
 
 class Object:
+    Wall_Depth = 100
+    
     def __init__(self, image, x,y, size, movable):
         self.x = x
         self.y = y
@@ -121,7 +123,7 @@ class Object:
                 self.direction = 'L'
                 return  
             # collision with edge of level
-            if curr <=WIDTH - .5*self.size: 
+            if curr <=WIDTH - .5*self.size-Object.Wall_Depth: 
                 self.x = curr
                 self.rect.center = (self.x, self.y)
             else:                
@@ -134,7 +136,7 @@ class Object:
                 self.direction = 'R'
                 return      
 
-            if curr >0+.5*self.size:
+            if curr >0+.5*self.size+Object.Wall_Depth:
                 self.x = curr
                 self.rect.center = (self.x, self.y)
             else:
@@ -147,7 +149,7 @@ class Object:
                 self.direction = 'D'
                 return      
 
-            if curr >0 + .5*self.size:           
+            if curr >0 + .5*self.size+ Object.Wall_Depth:           
                 self.y = curr
                 self.rect.center = (self.x, self.y)
             else:
@@ -159,13 +161,13 @@ class Object:
                 self.direction = 'U'
                 return  
 
-            if curr < HEIGHT- .5*self.size:
+            if curr < HEIGHT- .5*self.size-Object.Wall_Depth:
                 self.y = curr
                 self.rect.center = (self.x, self.y)
             else:
                 self.direction = 'U'
 
-L = Level(5, 100)
+L = Level(5, 175)
 
 while True:
     clock.tick(FPS)
