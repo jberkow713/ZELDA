@@ -39,18 +39,30 @@ def find_boundaries(x,y, size):
 
 def collision(a,b):
     
+    # ((1100, 1150), (630, 680))   ((156, 206), (757, 807))
+    
+
+
     in_between = False
     if a[0][0] >=b[0][0] and a[0][0]<= b[0][1]:
         in_between=True
     if a[0][1]>=b[0][0] and a[0][1]<=b[0][1]:
-        in_between=True    
+        in_between=True
+    if b[0][0] >=a[0][0] and b[0][0]<= a[0][1]:
+        in_between=True
+    if b[0][1]>=a[0][0] and b[0][1]<=a[0][1]:
+        in_between=True           
     
 
     if in_between == True:
         if a[1][0] >=b[1][0] and a[1][0] <=b[1][1]:
             return True
         if a[1][1] >=b[1][0] and a[1][1] <=b[1][1]:
-            return True   
+            return True
+        if b[1][0] >=a[1][0] and b[1][0] <=a[1][1]:
+            return True
+        if b[1][1] >=a[1][0] and b[1][1] <=a[1][1]:
+            return True        
 
 class Level:
     
@@ -64,8 +76,8 @@ class Level:
         
         
         for _ in range(self.enemies):
-            Enemy_SIZE = 50
-            Tree_Size = 50
+            Enemy_SIZE = 75
+            Tree_Size = 45
             Enemy_Buffer = int(Object.Wall_Depth+.5*Enemy_SIZE)
             Obj_Buffer = int(Object.Wall_Depth+.5*Tree_Size)
             if len(Objects)==0:
