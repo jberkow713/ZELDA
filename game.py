@@ -54,16 +54,20 @@ class Level:
         self.enemies = enemies
         self.starting_x = starting_x
         self.Enemy_List = []
-        self.set_room()        
+        self.set_landscape()
+        self.set_enemies()        
+    
+    def set_landscape(self):
+        pass
 
-    def set_room(self):
+    def set_enemies(self):
         
         for _ in range(self.enemies):
-            self.Enemy_List.append(Object(ghost, (self.starting_x),random.randint(100,HEIGHT-100),100))
+            self.Enemy_List.append(Object(ghost, (self.starting_x),random.randint(100,HEIGHT-100),100, True))
             self.starting_x += WIDTH/self.enemies    
 
 class Object:
-    def __init__(self, image, x,y, size):
+    def __init__(self, image, x,y, size, movable):
         self.x = x
         self.y = y
         self.size = size 
@@ -74,6 +78,7 @@ class Object:
         self.direction = None
         self.choices = ['U','D','L','R']
         self.Obj_num = self.obj_num()
+        self.movable = movable
     
     def obj_num(self):
         global Object_Count
@@ -170,11 +175,9 @@ while True:
     screen.fill(GROUND_COLOR)
 
     for enemy in L.Enemy_List:
-        enemy.move(random.randint(4,6))
-        screen.blit(enemy.image, enemy.rect)
+        if enemy.movable == True:
+            
+            enemy.move(random.randint(4,6))
+            screen.blit(enemy.image, enemy.rect)
         
     pygame.display.flip()
-
-
-
-      
