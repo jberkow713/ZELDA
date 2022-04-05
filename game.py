@@ -64,7 +64,7 @@ class Level:
     def __init__(self, enemies, lands):
         self.enemies = enemies
         self.lands = lands
-        self.Enemy_List = []
+        self.Object_List = []
         self.Wall_List = []
         self.set_room()            
     
@@ -78,7 +78,7 @@ class Level:
             if len(Objects)==0:
                 New = Object(ghost, (random.randint(Enemy_Buffer, WIDTH-Enemy_Buffer)),\
                 random.randint(Enemy_Buffer,HEIGHT-Enemy_Buffer),Enemy_SIZE,True)
-                self.Enemy_List.append(New)
+                self.Object_List.append(New)
 
             else:
                 while True:
@@ -87,7 +87,7 @@ class Level:
                     random.randint(Enemy_Buffer,HEIGHT-Enemy_Buffer),Enemy_SIZE,True)
                     
                     if New.collide(New.x, New.y)==False:
-                        self.Enemy_List.append(New)
+                        self.Object_List.append(New)
                         break
                     else:
                         global Object_Count
@@ -101,7 +101,7 @@ class Level:
                 random.randint(Obj_Buffer,HEIGHT-Obj_Buffer),Tree_Size)
                 
                 if New.collide(New.x, New.y)==False:
-                    self.Enemy_List.append(New)
+                    self.Object_List.append(New)
                     break
                 else:                    
                     Object_Count -=1                        
@@ -242,7 +242,7 @@ while True:
     # TODO blit walls from wall list here
 
 
-    for enemy in L.Enemy_List:
+    for enemy in L.Object_List:
         if enemy.can_move==True:
             enemy.move(random.randint(4,6))
         screen.blit(enemy.image, enemy.rect)
