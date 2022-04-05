@@ -65,6 +65,7 @@ class Level:
         self.enemies = enemies
         self.lands = lands
         self.Enemy_List = []
+        self.Wall_List = []
         self.set_room()            
     
     def set_room(self):        
@@ -106,12 +107,11 @@ class Level:
                     Object_Count -=1                        
                     Objects.remove(Objects[New.Obj_num])
         
-        # TODO create walls
+        # TODO create walls for level
+        # Add to Wall List
+        # w = Wall(wall,0,0,100)
+        # w1 = Wall(wall, 0,50,100)
 
-
-# TODO setup the wall class, these are not stored in object list, not checked for collisions,
-# They affect the Object.Wall_Depth, so when setting up the level, set enemies outside walls
-# Non enemy objects will be added to object list, but not level enemy list
 
 class Wall:
     Wall_Depth = 100
@@ -126,11 +126,9 @@ class Wall:
         self.rect.center = (self.x, self.y)
 
     def rescale(self):
-        self.image = pygame.transform.scale(self.image, (self.size, self.size))   
+        self.image = pygame.transform.scale(self.image, (self.size, self.size))
 
-
-class Object:
-    
+class Object:    
     
     def __init__(self, image, x,y, size,can_move=False):
         self.x = x
@@ -233,8 +231,6 @@ class Object:
                 self.direction = 'U'
 
 L = Level(20, 20)
-w = Wall(wall,0,0,100)
-w1 = Wall(wall, 0,50,100)
 
 while True:
     clock.tick(FPS)
@@ -243,8 +239,8 @@ while True:
             sys.exit() 
     screen.fill(GROUND_COLOR)
     
-    # screen.blit(w.image, w.rect)
-    # screen.blit(w1.image, w1.rect)
+    # TODO blit walls from wall list here
+
 
     for enemy in L.Enemy_List:
         if enemy.can_move==True:
