@@ -27,7 +27,6 @@ pygame.display.set_caption("The Legend of Zelda")
 ghost = pygame.image.load("ghost.png").convert_alpha()
 tree = pygame.image.load("TREE_PNG.png").convert_alpha()
 
-
 Object_Count = 0
 Objects = []
 
@@ -39,10 +38,6 @@ def find_boundaries(x,y, size):
 
 def collision(a,b):
     
-    # ((1100, 1150), (630, 680))   ((156, 206), (757, 807))
-    
-
-
     in_between = False
     if a[0][0] >=b[0][0] and a[0][0]<= b[0][1]:
         in_between=True
@@ -51,8 +46,7 @@ def collision(a,b):
     if b[0][0] >=a[0][0] and b[0][0]<= a[0][1]:
         in_between=True
     if b[0][1]>=a[0][0] and b[0][1]<=a[0][1]:
-        in_between=True           
-    
+        in_between=True    
 
     if in_between == True:
         if a[1][0] >=b[1][0] and a[1][0] <=b[1][1]:
@@ -72,8 +66,7 @@ class Level:
         self.Enemy_List = []
         self.set_room()            
     
-    def set_room(self):
-        
+    def set_room(self):        
         
         for _ in range(self.enemies):
             Enemy_SIZE = 75
@@ -108,11 +101,9 @@ class Level:
                 if New.collide(New.x, New.y)==False:
                     self.Enemy_List.append(New)
                     break
-                else:
-                    
+                else:                    
                     Object_Count -=1                        
-                    Objects.remove(Objects[New.Obj_num])
-        
+                    Objects.remove(Objects[New.Obj_num])        
 
 # TODO setup the wall class, these are not stored in object list, not checked for collisions,
 # They affect the Object.Wall_Depth, so when setting up the level, set enemies outside walls
@@ -145,8 +136,7 @@ class Object:
         return Obj_Num        
 
     def rescale(self):
-        self.image = pygame.transform.scale(self.image, (self.size, self.size))
-        
+        self.image = pygame.transform.scale(self.image, (self.size, self.size))        
     
     def collide(self, x,y):
         '''
@@ -157,9 +147,7 @@ class Object:
         Other_Objects = Objects.copy()
         Other_Objects.remove(Other_Objects[self.Obj_num])
         
-        location = find_boundaries(x,y,self.size)        
-        
-       
+        location = find_boundaries(x,y,self.size)      
         
         for object in Other_Objects:
             # Other object locations
@@ -170,6 +158,7 @@ class Object:
 
     def move(self, speed):
         
+        random_choice = self.choices[random.randint(0,len(self.choices)-1)]
         if self.direction == None:
             self.direction = self.choices[random.randint(0,len(self.choices)-1)]
         
@@ -179,7 +168,7 @@ class Object:
             curr = self.x + speed
             # collision with objects
             if self.collide(curr, self.y) == True:
-                self.direction = self.choices[random.randint(0,len(self.choices)-1)]
+                self.direction = random_choice
                 return  
             # collision with edge of level
             if curr <=WIDTH - .5*self.size-Object.Wall_Depth: 
@@ -192,7 +181,7 @@ class Object:
             
             curr = self.x - speed
             if self.collide(curr, self.y) == True:
-                self.direction = self.choices[random.randint(0,len(self.choices)-1)]
+                self.direction = random_choice
                 return      
 
             if curr >0+.5*self.size+Object.Wall_Depth:
@@ -205,7 +194,7 @@ class Object:
             
             curr = self.y - speed
             if self.collide(self.x, curr) == True:
-                self.direction = self.choices[random.randint(0,len(self.choices)-1)]
+                self.direction = random_choice
                 return      
 
             if curr >0 + .5*self.size+ Object.Wall_Depth:           
@@ -217,7 +206,7 @@ class Object:
         elif self.direction == 'D':
             curr = self.y + speed
             if self.collide(self.x, curr) == True:
-                self.direction = self.choices[random.randint(0,len(self.choices)-1)]
+                self.direction = random_choice
                 return  
 
             if curr < HEIGHT- .5*self.size-Object.Wall_Depth:
@@ -227,7 +216,6 @@ class Object:
                 self.direction = 'U'
 
 L = Level(20, 20)
-
 
 while True:
     clock.tick(FPS)
