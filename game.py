@@ -61,12 +61,15 @@ class Level:
         pass
 
     def set_enemies(self):
-        
+        # TODO, improve placement, randomize, within walls, avoid objects, avoid enemies, etc
+
         for _ in range(self.enemies):
-            self.Enemy_List.append(Object(ghost, (self.starting_x),random.randint(175,HEIGHT-175),100, True))
+            self.Enemy_List.append(Object(ghost, (self.starting_x),random.randint(175,HEIGHT-175),100))
             self.starting_x += WIDTH/self.enemies-Object.Wall_Depth/self.enemies    
+
 # TODO setup the wall class, these are not stored in object list, not checked for collisions,
 # They affect the Object.Wall_Depth, so when setting up the level, set enemies outside walls
+# Non enemy objects will be added to object list, but not level enemy list
 
 class Wall:
     pass
@@ -74,7 +77,7 @@ class Wall:
 class Object:
     Wall_Depth = 100
     
-    def __init__(self, image, x,y, size, movable):
+    def __init__(self, image, x,y, size):
         self.x = x
         self.y = y
         self.size = size 
@@ -85,7 +88,7 @@ class Object:
         self.direction = None
         self.choices = ['U','D','L','R']
         self.Obj_num = self.obj_num()
-        self.movable = movable
+        
     
     def obj_num(self):
         global Object_Count
@@ -181,10 +184,8 @@ while True:
             sys.exit() 
     screen.fill(GROUND_COLOR)
 
-    for enemy in L.Enemy_List:
-        if enemy.movable == True:
-            
-            enemy.move(random.randint(4,6))
-            screen.blit(enemy.image, enemy.rect)
+    for enemy in L.Enemy_List:        
+        enemy.move(random.randint(4,6))
+        screen.blit(enemy.image, enemy.rect)
         
     pygame.display.flip()
