@@ -44,6 +44,7 @@ def collision(a,b):
         in_between=True
     if a[0][1]>=b[0][0] and a[0][1]<=b[0][1]:
         in_between=True    
+    
 
     if in_between == True:
         if a[1][0] >=b[1][0] and a[1][0] <=b[1][1]:
@@ -63,8 +64,8 @@ class Level:
         
         
         for _ in range(self.enemies):
-            Enemy_SIZE = 100
-            Tree_Size = 75
+            Enemy_SIZE = 50
+            Tree_Size = 50
             Enemy_Buffer = int(Object.Wall_Depth+.5*Enemy_SIZE)
             Obj_Buffer = int(Object.Wall_Depth+.5*Tree_Size)
             if len(Objects)==0:
@@ -154,7 +155,7 @@ class Object:
             if collision(location, Loc)==True:
                 return True              
         return False
-        
+
     def move(self, speed):
         
         if self.direction == None:
@@ -166,7 +167,7 @@ class Object:
             curr = self.x + speed
             # collision with objects
             if self.collide(curr, self.y) == True:
-                self.direction = 'L'
+                self.direction = self.choices[random.randint(0,len(self.choices)-1)]
                 return  
             # collision with edge of level
             if curr <=WIDTH - .5*self.size-Object.Wall_Depth: 
@@ -179,7 +180,7 @@ class Object:
             
             curr = self.x - speed
             if self.collide(curr, self.y) == True:
-                self.direction = 'R'
+                self.direction = self.choices[random.randint(0,len(self.choices)-1)]
                 return      
 
             if curr >0+.5*self.size+Object.Wall_Depth:
@@ -192,7 +193,7 @@ class Object:
             
             curr = self.y - speed
             if self.collide(self.x, curr) == True:
-                self.direction = 'D'
+                self.direction = self.choices[random.randint(0,len(self.choices)-1)]
                 return      
 
             if curr >0 + .5*self.size+ Object.Wall_Depth:           
@@ -204,7 +205,7 @@ class Object:
         elif self.direction == 'D':
             curr = self.y + speed
             if self.collide(self.x, curr) == True:
-                self.direction = 'U'
+                self.direction = self.choices[random.randint(0,len(self.choices)-1)]
                 return  
 
             if curr < HEIGHT- .5*self.size-Object.Wall_Depth:
@@ -213,7 +214,7 @@ class Object:
             else:
                 self.direction = 'U'
 
-L = Level(5, 5)
+L = Level(20, 20)
 
 
 while True:
