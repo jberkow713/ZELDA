@@ -25,6 +25,8 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("The Legend of Zelda")
 
 ghost = pygame.image.load("ghost.png").convert_alpha()
+tree = pygame.image.load("TREE_PNG.png").convert_alpha()
+
 
 Object_Count = 0
 Objects = []
@@ -50,32 +52,31 @@ def collision(a,b):
             return True   
 
 class Level:
-    def __init__(self, enemies, starting_x):
-        self.enemies = enemies
-        self.starting_x = starting_x
-        self.Enemy_List = []
-        self.set_landscape()
-        self.set_enemies()            
     
-    def set_landscape(self):
-        pass
-
-    def set_enemies(self):
-        # TODO, improve placement, randomize, within walls, avoid objects, avoid enemies, etc
+    def __init__(self, enemies, lands):
+        self.enemies = enemies
+        self.lands = lands
+        self.Enemy_List = []
+        self.set_room()            
+    
+    def set_room(self):
+        
         
         for _ in range(self.enemies):
-            SIZE = 100
-            Buffer = int(Object.Wall_Depth+.5*SIZE)
+            Enemy_SIZE = 100
+            Tree_Size = 75
+            Enemy_Buffer = int(Object.Wall_Depth+.5*Enemy_SIZE)
+            Obj_Buffer = int(Object.Wall_Depth+.5*Tree_Size)
             if len(Objects)==0:
-                New = Object(ghost, (random.randint(Buffer, WIDTH-Buffer)),\
-                random.randint(Buffer,HEIGHT-Buffer),SIZE)
+                New = Object(ghost, (random.randint(Enemy_Buffer, WIDTH-Enemy_Buffer)),\
+                random.randint(Enemy_Buffer,HEIGHT-Enemy_Buffer),Enemy_SIZE,True)
                 self.Enemy_List.append(New)
 
             else:
                 while True:
                     
-                    New = Object(ghost, (random.randint(Buffer, WIDTH-Buffer)),\
-                    random.randint(Buffer,HEIGHT-Buffer),SIZE)
+                    New = Object(ghost, (random.randint(Enemy_Buffer, WIDTH-Enemy_Buffer)),\
+                    random.randint(Enemy_Buffer,HEIGHT-Enemy_Buffer),Enemy_SIZE,True)
                     
                     if New.collide(New.x, New.y)==False:
                         self.Enemy_List.append(New)
@@ -83,7 +84,22 @@ class Level:
                     else:
                         global Object_Count
                         Object_Count -=1                        
-                        Objects.remove(Objects[New.Obj_num])               
+                        Objects.remove(Objects[New.Obj_num])
+
+        for _ in range(self.lands):
+            while True:
+                    
+                New = Object(tree, (random.randint(Obj_Buffer, WIDTH-Obj_Buffer)),\
+                random.randint(Obj_Buffer,HEIGHT-Obj_Buffer),Tree_Size)
+                
+                if New.collide(New.x, New.y)==False:
+                    self.Enemy_List.append(New)
+                    break
+                else:
+                    
+                    Object_Count -=1                        
+                    Objects.remove(Objects[New.Obj_num])
+        
 
 # TODO setup the wall class, these are not stored in object list, not checked for collisions,
 # They affect the Object.Wall_Depth, so when setting up the level, set enemies outside walls
@@ -95,10 +111,11 @@ class Wall:
 class Object:
     Wall_Depth = 100
     
-    def __init__(self, image, x,y, size):
+    def __init__(self, image, x,y, size,can_move=False):
         self.x = x
         self.y = y
-        self.size = size 
+        self.size = size
+        self.can_move = can_move 
         self.image = image
         self.rescale()
         self.rect = self.image.get_rect()
@@ -116,6 +133,7 @@ class Object:
 
     def rescale(self):
         self.image = pygame.transform.scale(self.image, (self.size, self.size))
+        
     
     def collide(self, x,y):
         '''
@@ -128,12 +146,15 @@ class Object:
         
         location = find_boundaries(x,y,self.size)        
         
+       
+        
         for object in Other_Objects:
             # Other object locations
             Loc = find_boundaries(object[0], object[1], object[2])
             if collision(location, Loc)==True:
                 return True              
         return False
+        
     def move(self, speed):
         
         if self.direction == None:
@@ -192,7 +213,8 @@ class Object:
             else:
                 self.direction = 'U'
 
-L = Level(5, 175)
+L = Level(5, 5)
+
 
 while True:
     clock.tick(FPS)
@@ -200,9 +222,10 @@ while True:
         if event.type == pygame.QUIT:
             sys.exit() 
     screen.fill(GROUND_COLOR)
-
-    for enemy in L.Enemy_List:        
-        enemy.move(random.randint(4,6))
+    
+    for enemy in L.Enemy_List:
+        if enemy.can_move==True:
+            enemy.move(random.randint(4,6))
         screen.blit(enemy.image, enemy.rect)
         
     pygame.display.flip()
