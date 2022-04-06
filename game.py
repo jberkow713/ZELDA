@@ -80,7 +80,11 @@ class Link:
         Object_Count +=1
         Objects.append((self.x,self.y, self.size))
         return Obj_Num        
-
+    def find_image(self):
+        
+        # TODO 
+        # basically setting self.image to different image based on direction he faces after movement
+        return self.image
     def rescale(self):
         self.image = pygame.transform.scale(self.image, (self.size, self.size))
     
@@ -105,7 +109,7 @@ class Link:
         keys = pygame.key.get_pressed()    
 
         Objects[self.Obj_num] = (self.x, self.y, self.size)   
-        
+
         if keys[pygame.K_UP] and not keys[pygame.K_DOWN] \
             and not keys[pygame.K_RIGHT] and not keys[pygame.K_LEFT]:
 
@@ -116,6 +120,7 @@ class Link:
             if curr >0 + .5*self.size+ Wall.Wall_Depth:           
                 self.y = curr
                 self.rect.center = (self.x, self.y)
+                self.direction = 'U'
         
         if keys[pygame.K_DOWN] and not keys[pygame.K_UP]\
             and not keys[pygame.K_RIGHT] and not keys[pygame.K_LEFT]:
@@ -127,6 +132,7 @@ class Link:
             if curr <HEIGHT- .5*self.size- Wall.Wall_Depth:           
                 self.y = curr
                 self.rect.center = (self.x, self.y)
+                self.direction = 'D'
         
         if keys[pygame.K_RIGHT] and not keys[pygame.K_UP]\
             and not keys[pygame.K_DOWN] and not keys[pygame.K_LEFT]:
@@ -137,7 +143,8 @@ class Link:
 
             if curr <WIDTH - .5*self.size -Wall.Wall_Depth:
                 self.x = curr
-                self.rect.center = (self.x, self.y) 
+                self.rect.center = (self.x, self.y)
+                self.direction = 'R' 
         
         if keys[pygame.K_LEFT] and not keys[pygame.K_UP]\
             and not keys[pygame.K_DOWN] and not keys[pygame.K_RIGHT]:
@@ -148,8 +155,8 @@ class Link:
 
             if curr >0 + .5*self.size +Wall.Wall_Depth:
                 self.x = curr
-                self.rect.center = (self.x, self.y)                  
-                
+                self.rect.center = (self.x, self.y)
+                self.direction = 'L'          
 
 class Level:
     
@@ -173,8 +180,7 @@ class Level:
                 self.Object_List.append(New)
 
             else:
-                while True:
-                    
+                while True:                    
                     New = Object(ghost, (random.randint(Enemy_Buffer, WIDTH-Enemy_Buffer)),\
                     random.randint(Enemy_Buffer,HEIGHT-Enemy_Buffer),Enemy_SIZE,True)
                     
@@ -208,6 +214,7 @@ class Level:
             self.Wall_List.append(Wall(wall, WIDTH, i*Wall_Size, Wall_Size))
 
 class Wall:
+
     Wall_Depth = 100
     
     def __init__(self, image, x,y,size):
@@ -345,6 +352,8 @@ while True:
             enemy.move(random.randint(4,6))
         screen.blit(enemy.image, enemy.rect)
     
-    screen.blit(Player.image, Player.rect)    
+    image = Player.find_image()
+
+    screen.blit(image, Player.rect)    
         
     pygame.display.flip()
