@@ -25,6 +25,7 @@ clock = pygame.time.Clock()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("The Legend of Zelda")
 
+link = pygame.image.load("Link.png").convert_alpha()
 ghost = pygame.image.load("ghost.png").convert_alpha()
 tree = pygame.image.load("TREE_PNG.png").convert_alpha()
 wall = pygame.image.load("Zelda_Wall.jpg").convert_alpha()
@@ -58,7 +59,97 @@ def collision(a,b):
         if b[1][0] >=a[1][0] and b[1][0] <=a[1][1]:
             return True
         if b[1][1] >=a[1][0] and b[1][1] <=a[1][1]:
-            return True        
+            return True
+    
+class Link:
+
+    def __init__(self, image, x, y, size):
+        self.image = image
+        self.x = x
+        self.y = y
+        self.size = size
+        self.rescale()
+        self.direction = None
+        self.Obj_num = self.obj_num()
+        self.rect = self.image.get_rect()
+        self.rect.center = (self.x, self.y)
+
+    def obj_num(self):
+        global Object_Count
+        Obj_Num = Object_Count
+        Object_Count +=1
+        Objects.append((self.x,self.y, self.size))
+        return Obj_Num        
+
+    def rescale(self):
+        self.image = pygame.transform.scale(self.image, (self.size, self.size))
+    
+    def collide(self, x,y):
+        '''
+        Discovers collisions, returns True if collision exists
+        Going to compare x y coords and size to all other items in the object list
+        '''
+        # This is now a list of all other objects outside of itself
+        Other_Objects = Objects.copy()
+        Other_Objects.remove(Other_Objects[self.Obj_num])
+        
+        location = find_boundaries(x,y,self.size)      
+        
+        for object in Other_Objects:
+            # Other object locations
+            Loc = find_boundaries(object[0], object[1], object[2])
+            if collision(location, Loc)==True:
+                return True              
+        
+    def move(self,speed):
+        keys = pygame.key.get_pressed()    
+
+        Objects[self.Obj_num] = (self.x, self.y, self.size)   
+        
+        if keys[pygame.K_UP] and not keys[pygame.K_DOWN] \
+            and not keys[pygame.K_RIGHT] and not keys[pygame.K_LEFT]:
+
+            curr = self.y - speed
+            if self.collide(self.x, curr) == True:
+                return      
+
+            if curr >0 + .5*self.size+ Wall.Wall_Depth:           
+                self.y = curr
+                self.rect.center = (self.x, self.y)
+        
+        if keys[pygame.K_DOWN] and not keys[pygame.K_UP]\
+            and not keys[pygame.K_RIGHT] and not keys[pygame.K_LEFT]:
+
+            curr = self.y + speed
+            if self.collide(self.x, curr) == True:
+                return      
+
+            if curr <HEIGHT- .5*self.size- Wall.Wall_Depth:           
+                self.y = curr
+                self.rect.center = (self.x, self.y)
+        
+        if keys[pygame.K_RIGHT] and not keys[pygame.K_UP]\
+            and not keys[pygame.K_DOWN] and not keys[pygame.K_LEFT]:
+
+            curr = self.x + speed
+            if self.collide(curr, self.y)==True:
+                return
+
+            if curr <WIDTH - .5*self.size -Wall.Wall_Depth:
+                self.x = curr
+                self.rect.center = (self.x, self.y) 
+        
+        if keys[pygame.K_LEFT] and not keys[pygame.K_UP]\
+            and not keys[pygame.K_DOWN] and not keys[pygame.K_RIGHT]:
+
+            curr = self.x - speed
+            if self.collide(curr,self.y)==True:
+                return
+
+            if curr >0 + .5*self.size +Wall.Wall_Depth:
+                self.x = curr
+                self.rect.center = (self.x, self.y)                  
+                
 
 class Level:
     
@@ -233,7 +324,9 @@ class Object:
             else:
                 self.direction = 'U'
 
-L = Level(20, 20)
+Player = Link(link,500,500,75)
+L = Level(5, 5)
+
 
 while True:
     clock.tick(FPS)
@@ -245,9 +338,13 @@ while True:
     for wall in L.Wall_List:
         screen.blit(wall.image, wall.rect)
 
+    Player.move(5)   
+
     for enemy in L.Object_List:
         if enemy.can_move==True:
             enemy.move(random.randint(4,6))
         screen.blit(enemy.image, enemy.rect)
+    
+    screen.blit(Player.image, Player.rect)    
         
     pygame.display.flip()
