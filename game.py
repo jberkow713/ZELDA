@@ -70,7 +70,7 @@ class Level:
         self.set_room()            
     
     def set_room(self):        
-        
+        # Enemies
         for _ in range(self.enemies):
             Enemy_SIZE = 75
             Tree_Size = 45
@@ -94,7 +94,7 @@ class Level:
                         global Object_Count
                         Object_Count -=1                        
                         Objects.remove(Objects[New.Obj_num])
-
+        # Land Objects
         for _ in range(self.lands):
             while True:
                     
@@ -107,6 +107,7 @@ class Level:
                 else:                    
                     Object_Count -=1                        
                     Objects.remove(Objects[New.Obj_num])
+        # Walls
         Wall_Size = Wall.Wall_Depth*2
         for i in range((WIDTH//Wall_Size)+1):
             self.Wall_List.append(Wall(wall, i*Wall_Size, 0, Wall_Size))
@@ -114,13 +115,6 @@ class Level:
         for i in range((HEIGHT//Wall_Size)+1):
             self.Wall_List.append(Wall(wall, 0, i*Wall_Size, Wall_Size))
             self.Wall_List.append(Wall(wall, WIDTH, i*Wall_Size, Wall_Size))
-
-
-        # TODO create walls for level
-        # Add to Wall List
-        # w = Wall(wall,0,0,100)
-        # w1 = Wall(wall, 0,50,100)
-
 
 class Wall:
     Wall_Depth = 100
@@ -248,8 +242,6 @@ while True:
             sys.exit() 
     screen.fill(GROUND_COLOR)
     
-    # TODO blit walls from wall list here
-
     for wall in L.Wall_List:
         screen.blit(wall.image, wall.rect)
 
