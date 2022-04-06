@@ -1,4 +1,5 @@
 from re import L
+from tkinter import W
 import pygame
 import random
 import sys
@@ -106,7 +107,15 @@ class Level:
                 else:                    
                     Object_Count -=1                        
                     Objects.remove(Objects[New.Obj_num])
-        
+        Wall_Size = Wall.Wall_Depth*2
+        for i in range((WIDTH//Wall_Size)+1):
+            self.Wall_List.append(Wall(wall, i*Wall_Size, 0, Wall_Size))
+            self.Wall_List.append(Wall(wall, i*Wall_Size, HEIGHT,Wall_Size ))
+        for i in range((HEIGHT//Wall_Size)+1):
+            self.Wall_List.append(Wall(wall, 0, i*Wall_Size, Wall_Size))
+            self.Wall_List.append(Wall(wall, WIDTH, i*Wall_Size, Wall_Size))
+
+
         # TODO create walls for level
         # Add to Wall List
         # w = Wall(wall,0,0,100)
@@ -241,6 +250,8 @@ while True:
     
     # TODO blit walls from wall list here
 
+    for wall in L.Wall_List:
+        screen.blit(wall.image, wall.rect)
 
     for enemy in L.Object_List:
         if enemy.can_move==True:
