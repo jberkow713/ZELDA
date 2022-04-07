@@ -30,8 +30,16 @@ ghost = pygame.image.load("ghost.png").convert_alpha()
 tree = pygame.image.load("TREE_PNG.png").convert_alpha()
 wall = pygame.image.load("Zelda_Wall.jpg").convert_alpha()
 
+Link_Placement = None
 Object_Count = 0
 Objects = []
+
+def attack_distance(x,y):
+    
+    Link_X = Objects[Link_Placement][0]
+    Link_Y = Objects[Link_Placement][1]
+
+    return  math.sqrt(abs(Link_X-x)**2 +abs(Link_Y-y)**2)
 
 def find_boundaries(x,y, size):
     x_bounds = int(x -.5*size), int(x + .5*size)
@@ -63,11 +71,12 @@ def collision(a,b):
     
 class Link:
 
-    def __init__(self, image, x, y, size):
+    def __init__(self, image, x, y, size,speed):
         self.image = image
         self.x = x
         self.y = y
         self.size = size
+        self.speed = speed
         self.rescale()
         self.direction = None
         self.Obj_num = self.obj_num()
@@ -76,10 +85,13 @@ class Link:
 
     def obj_num(self):
         global Object_Count
+        global Link_Placement
         Obj_Num = Object_Count
+        Link_Placement = Obj_Num
         Object_Count +=1
         Objects.append((self.x,self.y, self.size))
         return Obj_Num        
+    
     def find_image(self):
         
         # TODO 
@@ -104,7 +116,7 @@ class Link:
             Loc = find_boundaries(object[0], object[1], object[2])
             if collision(location, Loc)==True:
                 return True              
-        
+            
     def move(self,speed):
         keys = pygame.key.get_pressed()    
 
@@ -113,7 +125,7 @@ class Link:
         if keys[pygame.K_UP] and not keys[pygame.K_DOWN] \
             and not keys[pygame.K_RIGHT] and not keys[pygame.K_LEFT]:
 
-            curr = self.y - speed
+            curr = self.y - self.speed 
             if self.collide(self.x, curr) == True:
                 return      
 
@@ -125,7 +137,7 @@ class Link:
         if keys[pygame.K_DOWN] and not keys[pygame.K_UP]\
             and not keys[pygame.K_RIGHT] and not keys[pygame.K_LEFT]:
 
-            curr = self.y + speed
+            curr = self.y + self.speed 
             if self.collide(self.x, curr) == True:
                 return      
 
@@ -137,7 +149,7 @@ class Link:
         if keys[pygame.K_RIGHT] and not keys[pygame.K_UP]\
             and not keys[pygame.K_DOWN] and not keys[pygame.K_LEFT]:
 
-            curr = self.x + speed
+            curr = self.x + self.speed 
             if self.collide(curr, self.y)==True:
                 return
 
@@ -149,7 +161,7 @@ class Link:
         if keys[pygame.K_LEFT] and not keys[pygame.K_UP]\
             and not keys[pygame.K_DOWN] and not keys[pygame.K_RIGHT]:
 
-            curr = self.x - speed
+            curr = self.x - self.speed 
             if self.collide(curr,self.y)==True:
                 return
 
@@ -160,9 +172,10 @@ class Link:
 
 class Level:
     
-    def __init__(self, enemies, lands):
+    def __init__(self, enemies, lands, enemy_speed):
         self.enemies = enemies
         self.lands = lands
+        self.enemy_speed = enemy_speed
         self.Object_List = []
         self.Wall_List = []
         self.set_room()            
@@ -176,13 +189,13 @@ class Level:
             Obj_Buffer = int(Wall.Wall_Depth+.5*Tree_Size)
             if len(Objects)==0:
                 New = Object(ghost, (random.randint(Enemy_Buffer, WIDTH-Enemy_Buffer)),\
-                random.randint(Enemy_Buffer,HEIGHT-Enemy_Buffer),Enemy_SIZE,True)
+                random.randint(Enemy_Buffer,HEIGHT-Enemy_Buffer),Enemy_SIZE,self.enemy_speed,True)
                 self.Object_List.append(New)
 
             else:
                 while True:                    
                     New = Object(ghost, (random.randint(Enemy_Buffer, WIDTH-Enemy_Buffer)),\
-                    random.randint(Enemy_Buffer,HEIGHT-Enemy_Buffer),Enemy_SIZE,True)
+                    random.randint(Enemy_Buffer,HEIGHT-Enemy_Buffer),Enemy_SIZE,self.enemy_speed,True)
                     
                     if New.collide(New.x, New.y)==False:
                         self.Object_List.append(New)
@@ -196,7 +209,7 @@ class Level:
             while True:
                     
                 New = Object(tree, (random.randint(Obj_Buffer, WIDTH-Obj_Buffer)),\
-                random.randint(Obj_Buffer,HEIGHT-Obj_Buffer),Tree_Size)
+                random.randint(Obj_Buffer,HEIGHT-Obj_Buffer),Tree_Size,0)
                 
                 if New.collide(New.x, New.y)==False:
                     self.Object_List.append(New)
@@ -231,10 +244,11 @@ class Wall:
 
 class Object:    
     
-    def __init__(self, image, x,y, size,can_move=False):
+    def __init__(self, image, x,y, size,speed,can_move=False):
         self.x = x
         self.y = y
         self.size = size
+        self.speed = speed
         self.can_move = can_move 
         self.image = image
         self.rescale()
@@ -242,7 +256,9 @@ class Object:
         self.rect.center = (self.x, self.y)
         self.direction = None
         self.choices = ['U','D','L','R']
-        self.Obj_num = self.obj_num()        
+        self.Obj_num = self.obj_num()
+        self.distance_dict = {}
+        self.attacking = False        
     
     def obj_num(self):
         global Object_Count
@@ -270,18 +286,58 @@ class Object:
             Loc = find_boundaries(object[0], object[1], object[2])
             if collision(location, Loc)==True:
                 return True              
-        return False
+        return False   
 
-    def move(self, speed):
+    def create_attack(self):
         
+        for Dir in self.choices:
+            if Dir == 'U':
+                x = self.x
+                y = self.y - self.speed
+                if self.collide(x, y) ==False:
+                    self.distance_dict[Dir] = attack_distance(x,y)
+                else:
+                    self.distance_dict[Dir] = 1000
+
+            if Dir == 'D':
+                x = self.x
+                y = self.y + self.speed
+                if self.collide(x, y) ==False:
+                    self.distance_dict[Dir] = attack_distance(x,y)
+                else:
+                    self.distance_dict[Dir] = 1000            
+            if Dir == 'L':
+                x = self.x - self.speed
+                y = self.y 
+                if self.collide(x, y) ==False:
+                    self.distance_dict[Dir] = attack_distance(x,y)
+                else:
+                    self.distance_dict[Dir] = 1000     
+            if Dir == 'R':
+                x = self.x + self.speed
+                y = self.y 
+                if self.collide(x, y) ==False:
+                    self.distance_dict[Dir] = attack_distance(x,y)
+                else:
+                    self.distance_dict[Dir] = 1000
+        
+        min_distance = min(self.distance_dict.values())
+        if min_distance >400:
+            return 
+        else:
+            self.direction = min(self.distance_dict, key=self.distance_dict.get)
+        
+    def move(self):
+        self.create_attack()          
+            
         random_choice = self.choices[random.randint(0,len(self.choices)-1)]
         if self.direction == None:
             self.direction = self.choices[random.randint(0,len(self.choices)-1)]
-        
+            
         Objects[self.Obj_num] = (self.x, self.y, self.size)         
 
         if self.direction=='R':
-            curr = self.x + speed
+            curr = self.x + self.speed
             # collision with objects
             if self.collide(curr, self.y) == True:
                 self.direction = random_choice
@@ -295,7 +351,7 @@ class Object:
 
         elif self.direction == 'L':
             
-            curr = self.x - speed
+            curr = self.x - self.speed
             if self.collide(curr, self.y) == True:
                 self.direction = random_choice
                 return      
@@ -308,7 +364,7 @@ class Object:
                 
         elif self.direction == 'U':
             
-            curr = self.y - speed
+            curr = self.y - self.speed
             if self.collide(self.x, curr) == True:
                 self.direction = random_choice
                 return      
@@ -320,7 +376,7 @@ class Object:
                 self.direction = 'D'
 
         elif self.direction == 'D':
-            curr = self.y + speed
+            curr = self.y + self.speed
             if self.collide(self.x, curr) == True:
                 self.direction = random_choice
                 return  
@@ -331,9 +387,8 @@ class Object:
             else:
                 self.direction = 'U'
 
-Player = Link(link,500,500,75)
-L = Level(5, 5)
-
+Player = Link(link,500,500,75,10)
+L = Level(1,5,5)
 
 while True:
     clock.tick(FPS)
@@ -346,14 +401,17 @@ while True:
         screen.blit(wall.image, wall.rect)
 
     Player.move(5)   
-
+    
     for enemy in L.Object_List:
         if enemy.can_move==True:
-            enemy.move(random.randint(4,6))
-        screen.blit(enemy.image, enemy.rect)
+            enemy.move()
+            screen.blit(enemy.image, enemy.rect)
+        else:
+            screen.blit(enemy.image, enemy.rect)
+
+
     
     image = Player.find_image()
-
     screen.blit(image, Player.rect)    
         
     pygame.display.flip()
