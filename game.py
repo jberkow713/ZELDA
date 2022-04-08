@@ -77,7 +77,11 @@ def collision(a,b):
             return True
         if b[1][1] >=a[1][0] and b[1][1] <=a[1][1]:
             return True
-    
+#TODO Sword class
+# 
+class Sword:
+    pass
+
 class Link:
 
     def __init__(self, image, x, y, size,speed):
