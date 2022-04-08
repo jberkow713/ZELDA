@@ -25,7 +25,16 @@ clock = pygame.time.Clock()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("The Legend of Zelda")
 
-link = pygame.image.load("Link.png").convert_alpha()
+link_down = pygame.image.load("Link.png").convert_alpha()
+link_up = pygame.image.load("Link_Up_Advanced.jpg").convert_alpha()
+link_left = pygame.image.load("Link_Left_advanced.png").convert_alpha()
+link_right = pygame.image.load("Link_Right_Advanced.png").convert_alpha()
+
+sword_down = pygame.image.load("Link_Sword_Down.png").convert_alpha()
+sword_up = pygame.image.load("Link_Sword_Up.jpg").convert_alpha()
+sword_left = pygame.image.load("Link_Sword_Left.jpg").convert_alpha()
+sword_right = pygame.image.load("Link_Sword_Right.png").convert_alpha()
+
 ghost = pygame.image.load("ghost.png").convert_alpha()
 tree = pygame.image.load("TREE_PNG.png").convert_alpha()
 wall = pygame.image.load("Zelda_Wall.jpg").convert_alpha()
@@ -78,7 +87,7 @@ class Link:
         self.size = size
         self.speed = speed
         self.rescale()
-        self.direction = None
+        self.direction = 'D'
         self.Obj_num = self.obj_num()
         self.rect = self.image.get_rect()
         self.rect.center = (self.x, self.y)
@@ -96,7 +105,17 @@ class Link:
         
         # TODO 
         # basically setting self.image to different image based on direction he faces after movement
-        return self.image
+        if self.direction == 'D':
+            self.image = link_down
+        elif self.direction == 'U':
+            self.image = link_up
+        elif self.direction == 'R':
+            self.image = link_right
+        elif self.direction == 'L':
+            self.image = link_left
+
+        self.rescale()                
+        
     def rescale(self):
         self.image = pygame.transform.scale(self.image, (self.size, self.size))
     
@@ -172,9 +191,11 @@ class Link:
 
 class Level:
     
-    def __init__(self, enemies, lands, enemy_speed):
+    def __init__(self, enemies, lands,enemy_size, land_size, enemy_speed):
         self.enemies = enemies
         self.lands = lands
+        self.enemy_size = enemy_size
+        self.land_size = land_size
         self.enemy_speed = enemy_speed
         self.Object_List = []
         self.Wall_List = []
@@ -183,8 +204,8 @@ class Level:
     def set_room(self):        
         # Enemies
         for _ in range(self.enemies):
-            Enemy_SIZE = 75
-            Tree_Size = 45
+            Enemy_SIZE = self.enemy_size
+            Tree_Size = self.land_size
             Enemy_Buffer = int(Wall.Wall_Depth+.5*Enemy_SIZE)
             Obj_Buffer = int(Wall.Wall_Depth+.5*Tree_Size)
             if len(Objects)==0:
@@ -387,8 +408,8 @@ class Object:
             else:
                 self.direction = 'U'
 
-Player = Link(link,500,500,75,10)
-L = Level(1,5,5)
+Player = Link(link_down,500,500,75,5)
+L = Level(2,5,75,50,3)
 
 while True:
     clock.tick(FPS)
@@ -408,10 +429,8 @@ while True:
             screen.blit(enemy.image, enemy.rect)
         else:
             screen.blit(enemy.image, enemy.rect)
-
-
     
-    image = Player.find_image()
-    screen.blit(image, Player.rect)    
+    Player.find_image()
+    screen.blit(Player.image, Player.rect)    
         
     pygame.display.flip()
