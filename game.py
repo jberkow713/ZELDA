@@ -77,11 +77,45 @@ def collision(a,b):
             return True
         if b[1][1] >=a[1][0] and b[1][1] <=a[1][1]:
             return True
-#TODO Sword class
-# 
 class Sword:
-    pass
+    SIZE = 75
+    def __init__(self,owner):
+        self.owner = owner
+        self.x = -1000
+        self.y = -1000
+        self.size = Sword.SIZE
+        
 
+    def rescale(self):
+        self.image = pygame.transform.scale(self.image, (self.size, self.size))
+        self.rect = self.image.get_rect()
+        self.rect.center = (self.x, self.y)    
+    
+    def load_sword(self):
+        if self.owner.direction=='U':
+            self.image = sword_up
+            self.x = self.owner.x
+            self.y = self.owner.y - .75*self.owner.size
+            self.rescale()
+            return self.image
+        if self.owner.direction=='D':
+            self.image = sword_down
+            self.x = self.owner.x
+            self.y = self.owner.y + .6*self.owner.size
+            self.rescale()
+            return self.image    
+        if self.owner.direction=='R':
+            self.image = sword_right
+            self.x = self.owner.x+.6*self.owner.size
+            self.y = self.owner.y 
+            self.rescale()
+            return self.image    
+        if self.owner.direction=='L':
+            self.image = sword_left
+            self.x = self.owner.x-.6*self.owner.size
+            self.y = self.owner.y 
+            self.rescale()
+            return self.image
 class Link:
 
     def __init__(self, image, x, y, size,speed):
@@ -95,6 +129,7 @@ class Link:
         self.Obj_num = self.obj_num()
         self.rect = self.image.get_rect()
         self.rect.center = (self.x, self.y)
+        self.sword = Sword(self)
 
     def obj_num(self):
         global Object_Count
@@ -144,7 +179,9 @@ class Link:
         keys = pygame.key.get_pressed()    
 
         Objects[self.Obj_num] = (self.x, self.y, self.size)   
-
+        if keys[pygame.K_RETURN]:
+            self.sword.load_sword()
+        
         if keys[pygame.K_UP] and not keys[pygame.K_DOWN] \
             and not keys[pygame.K_RIGHT] and not keys[pygame.K_LEFT]:
 
@@ -420,11 +457,11 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit() 
-    screen.fill(GROUND_COLOR)
+    screen.fill(WHITE)
     
     for wall in L.Wall_List:
         screen.blit(wall.image, wall.rect)
-
+    Player.sword.x = -1000
     Player.move(5)   
     
     for enemy in L.Object_List:
@@ -435,6 +472,9 @@ while True:
             screen.blit(enemy.image, enemy.rect)
     
     Player.find_image()
-    screen.blit(Player.image, Player.rect)    
+    screen.blit(Player.image, Player.rect)
+    if Player.sword.x !=-1000:
+        
+        screen.blit(Player.sword.image, Player.sword.rect)    
         
     pygame.display.flip()
