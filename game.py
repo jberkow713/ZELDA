@@ -40,6 +40,8 @@ tree = pygame.image.load("TREE_PNG.png").convert_alpha()
 wall = pygame.image.load("Zelda_Wall.jpg").convert_alpha()
 
 Link_Placement = None
+Sword_Placement = None
+Sword_Direction = None
 Object_Count = 0
 Objects = []
 
@@ -55,6 +57,19 @@ def find_boundaries(x,y, size):
     y_bounds = int(y-.5*size), int(y+.5*size)
 
     return x_bounds, y_bounds
+def pushback(x,y, direction):
+    if direction == 'U':
+        return x, y-100
+    elif direction =='D':
+        return x,y+100
+    elif direction == 'L':
+        return x-100,y
+    elif direction == 'R':
+        return x+100,y
+def off_walls(x,y,size):
+    if x <= WIDTH - .5*size-Wall.Wall_Depth and x>0+.5*size+Wall.Wall_Depth:
+        if y >0 + .5*size+ Wall.Wall_Depth and y < HEIGHT- .5*size-Wall.Wall_Depth:
+            return True                 
 
 def collision(a,b):
     
@@ -84,7 +99,17 @@ class Sword:
         self.x = -1000
         self.y = -1000
         self.size = Sword.SIZE
-        
+        self.obj_num = self.obj_num()
+        self.direction = None 
+
+    def obj_num(self):
+        global Object_Count
+        global Sword_Placement
+        Obj_Num = Object_Count
+        Sword_Placement = Obj_Num
+        Object_Count +=1
+        Objects.append((self.x,self.y, self.size))
+        return Obj_Num               
 
     def rescale(self):
         self.image = pygame.transform.scale(self.image, (self.size, self.size))
@@ -92,25 +117,34 @@ class Sword:
         self.rect.center = (self.x, self.y)    
     
     def load_sword(self):
+        global Sword_Direction
         if self.owner.direction=='U':
+            self.direction = 'U'
+            Sword_Direction = self.direction
             self.image = sword_up
             self.x = self.owner.x
             self.y = self.owner.y - .75*self.owner.size
             self.rescale()
             return self.image
         if self.owner.direction=='D':
+            self.direction = 'D'
+            Sword_Direction = self.direction
             self.image = sword_down
             self.x = self.owner.x
             self.y = self.owner.y + .6*self.owner.size
             self.rescale()
             return self.image    
         if self.owner.direction=='R':
+            self.direction = 'R'
+            Sword_Direction = self.direction
             self.image = sword_right
             self.x = self.owner.x+.6*self.owner.size
             self.y = self.owner.y 
             self.rescale()
             return self.image    
         if self.owner.direction=='L':
+            self.direction = 'L'
+            Sword_Direction = self.direction
             self.image = sword_left
             self.x = self.owner.x-.6*self.owner.size
             self.y = self.owner.y 
@@ -141,9 +175,7 @@ class Link:
         return Obj_Num        
     
     def find_image(self):
-        
-        # TODO 
-        # basically setting self.image to different image based on direction he faces after movement
+                
         if self.direction == 'D':
             self.image = link_down
         elif self.direction == 'U':
@@ -152,7 +184,6 @@ class Link:
             self.image = link_right
         elif self.direction == 'L':
             self.image = link_left
-
         self.rescale()                
         
     def rescale(self):
@@ -165,8 +196,10 @@ class Link:
         '''
         # This is now a list of all other objects outside of itself
         Other_Objects = Objects.copy()
-        Other_Objects.remove(Other_Objects[self.Obj_num])
-        
+        # Removing Link and Sword from Object list to avoid colliding with self
+        Other_Objects.remove(Other_Objects[0])
+        Other_Objects.remove(Other_Objects[0])            
+            
         location = find_boundaries(x,y,self.size)      
         
         for object in Other_Objects:
@@ -175,17 +208,20 @@ class Link:
             if collision(location, Loc)==True:
                 return True              
             
-    def move(self,speed):
-        keys = pygame.key.get_pressed()    
+    def move(self):
+        keys = pygame.key.get_pressed()
+        
+        Objects[self.Obj_num] = (self.x, self.y, self.size)
 
-        Objects[self.Obj_num] = (self.x, self.y, self.size)   
         if keys[pygame.K_RETURN]:
             self.sword.load_sword()
-        
+            Objects[Sword_Placement] = (self.sword.x, self.sword.y, self.sword.size)
+            return
+
         if keys[pygame.K_UP] and not keys[pygame.K_DOWN] \
             and not keys[pygame.K_RIGHT] and not keys[pygame.K_LEFT]:
 
-            curr = self.y - self.speed 
+            curr = self.y - self.speed
             if self.collide(self.x, curr) == True:
                 return      
 
@@ -197,7 +233,7 @@ class Link:
         if keys[pygame.K_DOWN] and not keys[pygame.K_UP]\
             and not keys[pygame.K_RIGHT] and not keys[pygame.K_LEFT]:
 
-            curr = self.y + self.speed 
+            curr = self.y + self.speed
             if self.collide(self.x, curr) == True:
                 return      
 
@@ -209,7 +245,7 @@ class Link:
         if keys[pygame.K_RIGHT] and not keys[pygame.K_UP]\
             and not keys[pygame.K_DOWN] and not keys[pygame.K_LEFT]:
 
-            curr = self.x + self.speed 
+            curr = self.x + self.speed
             if self.collide(curr, self.y)==True:
                 return
 
@@ -221,7 +257,7 @@ class Link:
         if keys[pygame.K_LEFT] and not keys[pygame.K_UP]\
             and not keys[pygame.K_DOWN] and not keys[pygame.K_RIGHT]:
 
-            curr = self.x - self.speed 
+            curr = self.x - self.speed
             if self.collide(curr,self.y)==True:
                 return
 
@@ -229,7 +265,7 @@ class Link:
                 self.x = curr
                 self.rect.center = (self.x, self.y)
                 self.direction = 'L'          
-
+                 
 class Level:
     
     def __init__(self, enemies, lands,enemy_size, land_size, enemy_speed):
@@ -342,7 +378,14 @@ class Object:
         Other_Objects.remove(Other_Objects[self.Obj_num])
         
         location = find_boundaries(x,y,self.size)      
+        # First checking for sword collision
+        Sword = Objects[Sword_Placement]
         
+        Sword_Loc = find_boundaries(Sword[0],Sword[1],Sword[2])
+        if collision(location, Sword_Loc) == True:
+            
+            return 'Hit'
+        # Collision for other objects
         for object in Other_Objects:
             # Other object locations
             Loc = find_boundaries(object[0], object[1], object[2])
@@ -399,11 +442,26 @@ class Object:
         Objects[self.Obj_num] = (self.x, self.y, self.size)         
 
         if self.direction=='R':
-            curr = self.x + self.speed
-            # collision with objects
-            if self.collide(curr, self.y) == True:
+            curr = self.x + self.speed            
+            
+            C = self.collide(curr, self.y)
+            if C == True:
                 self.direction = random_choice
-                return  
+                return 
+            elif C == 'Hit':
+                Objects[Sword_Placement] = -1000,-1000,Sword.SIZE
+                new_x, new_y =  pushback(curr,self.y, Sword_Direction)
+                if self.collide(new_x, new_y) == True:
+                    self.direction = random_choice
+                    return  
+                if off_walls(new_x,new_y, self.size)==True:
+                    self.x = new_x
+                    self.y = new_y
+                    self.rect.center = (self.x, self.y)
+                    return 
+                else:
+                    self.direction = random_choice
+                    return  
             # collision with edge of level
             if curr <=WIDTH - .5*self.size-Wall.Wall_Depth: 
                 self.x = curr
@@ -414,9 +472,25 @@ class Object:
         elif self.direction == 'L':
             
             curr = self.x - self.speed
-            if self.collide(curr, self.y) == True:
+            
+            C = self.collide(curr, self.y)
+            if C == True:
                 self.direction = random_choice
-                return      
+                return 
+            elif C == 'Hit':
+                Objects[Sword_Placement] = -1000,-1000,Sword.SIZE
+                new_x, new_y =  pushback(curr,self.y, Sword_Direction)
+                if self.collide(new_x, new_y) == True:
+                    self.direction = random_choice
+                    return  
+                if off_walls(new_x,new_y, self.size)==True:
+                    self.x = new_x
+                    self.y = new_y
+                    self.rect.center = (self.x, self.y)
+                    return 
+                else:
+                    self.direction = random_choice
+                    return      
 
             if curr >0+.5*self.size+Wall.Wall_Depth:
                 self.x = curr
@@ -427,9 +501,25 @@ class Object:
         elif self.direction == 'U':
             
             curr = self.y - self.speed
-            if self.collide(self.x, curr) == True:
+            
+            C = self.collide(self.x, curr)
+            if C == True:
                 self.direction = random_choice
-                return      
+                return 
+            elif C == 'Hit':
+                Objects[Sword_Placement] = -1000,-1000,Sword.SIZE
+                new_x, new_y =  pushback(self.x,curr, Sword_Direction)
+                if self.collide(new_x, new_y) == True:
+                    self.direction = random_choice
+                    return  
+                if off_walls(new_x,new_y, self.size)==True:
+                    self.x = new_x
+                    self.y = new_y
+                    self.rect.center = (self.x, self.y)
+                    return 
+                else:
+                    self.direction = random_choice
+                    return      
 
             if curr >0 + .5*self.size+ Wall.Wall_Depth:           
                 self.y = curr
@@ -438,10 +528,26 @@ class Object:
                 self.direction = 'D'
 
         elif self.direction == 'D':
-            curr = self.y + self.speed
-            if self.collide(self.x, curr) == True:
+            curr = self.y + self.speed            
+            
+            C = self.collide(self.x, curr)
+            if C == True:
                 self.direction = random_choice
-                return  
+                return 
+            elif C == 'Hit':
+                Objects[Sword_Placement] = -1000,-1000,Sword.SIZE
+                new_x, new_y =  pushback(self.x,curr, Sword_Direction)
+                if self.collide(new_x, new_y) == True:
+                    self.direction = random_choice
+                    return  
+                if off_walls(new_x,new_y, self.size)==True:
+                    self.x = new_x
+                    self.y = new_y
+                    self.rect.center = (self.x, self.y)
+                    return 
+                else:
+                    self.direction = random_choice
+                    return  
 
             if curr < HEIGHT- .5*self.size-Wall.Wall_Depth:
                 self.y = curr
@@ -462,7 +568,7 @@ while True:
     for wall in L.Wall_List:
         screen.blit(wall.image, wall.rect)
     Player.sword.x = -1000
-    Player.move(5)   
+    Player.move()   
     
     for enemy in L.Object_List:
         if enemy.can_move==True:
