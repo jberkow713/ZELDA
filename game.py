@@ -70,6 +70,10 @@ def off_walls(x,y,size):
     if x <= WIDTH - .5*size-Wall.Wall_Depth and x>0+.5*size+Wall.Wall_Depth:
         if y >0 + .5*size+ Wall.Wall_Depth and y < HEIGHT- .5*size-Wall.Wall_Depth:
             return True                 
+def choose_new_path(LIST, DIR):
+    l = LIST.copy()
+    l.remove(DIR)
+    return l[random.randint(0,len(l)-1)]
 
 def collision(a,b):
     
@@ -357,7 +361,9 @@ class Object:
         self.Obj_num = self.obj_num()
         self.distance_dict = {}
         self.attacking = False
-        self.health =random.randint(15,20)      
+        self.health =random.randint(15,20)
+        self.attack_distance = 400
+                         
     
     def obj_num(self):
         global Object_Count
@@ -429,14 +435,23 @@ class Object:
                     self.distance_dict[Dir] = 1000
         
         min_distance = min(self.distance_dict.values())
-        if min_distance >400:
-            
+        
+        if min_distance >self.attack_distance:            
             return 
+
         else:
             self.direction = min(self.distance_dict, key=self.distance_dict.get)
+            
         
     def move(self):
-        self.create_attack()          
+        
+        self.create_attack()
+
+        if self.attack_distance<400:
+            self.attack_distance +=10
+            if self.attack_distance >=400:
+                self.attack_distance = 400
+
         random_dir = self.choices[random.randint(0,len(self.choices)-1)]       
         if self.direction == None:
             self.direction = random_dir
@@ -446,9 +461,14 @@ class Object:
         if self.direction=='R':
             curr = self.x + self.speed            
             
-            C = self.collide(curr, self.y)
+            C = self.collide(curr+self.speed, self.y)
+            
             if C == True:
-                self.direction = random_dir
+                
+                if self.attack_distance>=400:
+                    self.attack_distance = 0
+                    
+                self.direction = random_dir                
                 return 
             elif C == 'Hit':
                                 
@@ -458,7 +478,7 @@ class Object:
                 if off_walls(new_x,new_y, self.size)==True:
                     self.x = new_x
                     self.y = new_y
-                    self.rect.center = (self.x, self.y)                    
+                    self.rect.center = (self.x, self.y)
                     return 
                 else:
                     return  
@@ -467,16 +487,22 @@ class Object:
                 self.x = curr
                 self.rect.center = (self.x, self.y)
                 self.direction=='R'
-            else:                
+            else:
+
                 self.direction = 'L'
 
         elif self.direction == 'L':
             
             curr = self.x - self.speed
             
-            C = self.collide(curr, self.y)
+            C = self.collide(curr-self.speed, self.y)
+            
             if C == True:
-                self.direction =random_dir
+                
+                if self.attack_distance>=400:
+                    self.attack_distance = 0
+                    
+                self.direction = random_dir                
                 return 
             elif C == 'Hit':
                                 
@@ -502,9 +528,14 @@ class Object:
             
             curr = self.y - self.speed
             
-            C = self.collide(self.x, curr)
+            C = self.collide(self.x, curr-self.speed)
+            
             if C == True:
-                self.direction =random_dir
+                
+                if self.attack_distance>=400:
+                    self.attack_distance = 0
+                    
+                self.direction = random_dir                
                 return 
             elif C == 'Hit':
                                 
@@ -527,11 +558,16 @@ class Object:
                 self.direction = 'D'
 
         elif self.direction == 'D':
-            curr = self.y + self.speed            
+            curr = self.y + self.speed           
             
-            C = self.collide(self.x, curr)
+            C = self.collide(self.x, curr+self.speed)
+            
             if C == True:
-                self.direction =random_dir
+                
+                if self.attack_distance>=400:
+                    self.attack_distance = 0
+                    
+                self.direction = random_dir                
                 return 
             elif C == 'Hit':                                
                 new_x, new_y =  pushback(self.x,curr, Sword_Direction)
@@ -553,7 +589,7 @@ class Object:
                 self.direction = 'U'
 
 Player = Link(link_down,500,500,75,10)
-L = Level(30,15,75,50,3)
+L = Level(4,5,75,50,3)
 
 while True:
     clock.tick(FPS)
