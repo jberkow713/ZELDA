@@ -553,7 +553,7 @@ class Object:
                 self.direction = 'U'
 
 Player = Link(link_down,500,500,75,10)
-L = Level(10,5,75,50,3)
+L = Level(30,15,75,50,3)
 
 while True:
     clock.tick(FPS)
