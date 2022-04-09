@@ -356,7 +356,8 @@ class Object:
         self.choices = ['U','D','L','R']
         self.Obj_num = self.obj_num()
         self.distance_dict = {}
-        self.attacking = False        
+        self.attacking = False
+        self.health =10        
     
     def obj_num(self):
         global Object_Count
@@ -383,7 +384,7 @@ class Object:
         
         Sword_Loc = find_boundaries(Sword[0],Sword[1],Sword[2])
         if collision(location, Sword_Loc) == True:
-            
+            self.health -=1            
             return 'Hit'
         # Collision for other objects
         for object in Other_Objects:
@@ -434,33 +435,31 @@ class Object:
         
     def move(self):
         self.create_attack()          
-            
-        random_choice = self.choices[random.randint(0,len(self.choices)-1)]
+                
         if self.direction == None:
             self.direction = self.choices[random.randint(0,len(self.choices)-1)]
             
         Objects[self.Obj_num] = (self.x, self.y, self.size)         
-
+        
         if self.direction=='R':
             curr = self.x + self.speed            
             
             C = self.collide(curr, self.y)
             if C == True:
-                self.direction = random_choice
                 return 
             elif C == 'Hit':
-                Objects[Sword_Placement] = -1000,-1000,Sword.SIZE
+                                
                 new_x, new_y =  pushback(curr,self.y, Sword_Direction)
                 if self.collide(new_x, new_y) == True:
-                    self.direction = random_choice
+                    
                     return  
                 if off_walls(new_x,new_y, self.size)==True:
                     self.x = new_x
                     self.y = new_y
                     self.rect.center = (self.x, self.y)
+                    
                     return 
                 else:
-                    self.direction = random_choice
                     return  
             # collision with edge of level
             if curr <=WIDTH - .5*self.size-Wall.Wall_Depth: 
@@ -475,21 +474,19 @@ class Object:
             
             C = self.collide(curr, self.y)
             if C == True:
-                self.direction = random_choice
                 return 
             elif C == 'Hit':
-                Objects[Sword_Placement] = -1000,-1000,Sword.SIZE
+                                
                 new_x, new_y =  pushback(curr,self.y, Sword_Direction)
                 if self.collide(new_x, new_y) == True:
-                    self.direction = random_choice
                     return  
                 if off_walls(new_x,new_y, self.size)==True:
                     self.x = new_x
                     self.y = new_y
                     self.rect.center = (self.x, self.y)
+                    self.direction = Sword_Direction
                     return 
                 else:
-                    self.direction = random_choice
                     return      
 
             if curr >0+.5*self.size+Wall.Wall_Depth:
@@ -504,21 +501,19 @@ class Object:
             
             C = self.collide(self.x, curr)
             if C == True:
-                self.direction = random_choice
                 return 
             elif C == 'Hit':
-                Objects[Sword_Placement] = -1000,-1000,Sword.SIZE
+                                
                 new_x, new_y =  pushback(self.x,curr, Sword_Direction)
                 if self.collide(new_x, new_y) == True:
-                    self.direction = random_choice
                     return  
                 if off_walls(new_x,new_y, self.size)==True:
                     self.x = new_x
                     self.y = new_y
                     self.rect.center = (self.x, self.y)
+                    self.direction = Sword_Direction
                     return 
                 else:
-                    self.direction = random_choice
                     return      
 
             if curr >0 + .5*self.size+ Wall.Wall_Depth:           
@@ -532,21 +527,19 @@ class Object:
             
             C = self.collide(self.x, curr)
             if C == True:
-                self.direction = random_choice
                 return 
             elif C == 'Hit':
-                Objects[Sword_Placement] = -1000,-1000,Sword.SIZE
+                                
                 new_x, new_y =  pushback(self.x,curr, Sword_Direction)
                 if self.collide(new_x, new_y) == True:
-                    self.direction = random_choice
                     return  
                 if off_walls(new_x,new_y, self.size)==True:
                     self.x = new_x
                     self.y = new_y
                     self.rect.center = (self.x, self.y)
+                    self.direction = Sword_Direction
                     return 
                 else:
-                    self.direction = random_choice
                     return  
 
             if curr < HEIGHT- .5*self.size-Wall.Wall_Depth:
@@ -567,7 +560,8 @@ while True:
     
     for wall in L.Wall_List:
         screen.blit(wall.image, wall.rect)
-    Player.sword.x = -1000
+    
+    Objects[Sword_Placement] = (-1000,-1000,Sword.SIZE) 
     Player.move()   
     
     for enemy in L.Object_List:
@@ -579,7 +573,7 @@ while True:
     
     Player.find_image()
     screen.blit(Player.image, Player.rect)
-    if Player.sword.x !=-1000:
+    if Objects[Sword_Placement][0]  !=-1000:
         
         screen.blit(Player.sword.image, Player.sword.rect)    
         
