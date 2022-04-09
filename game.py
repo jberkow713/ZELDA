@@ -357,7 +357,7 @@ class Object:
         self.Obj_num = self.obj_num()
         self.distance_dict = {}
         self.attacking = False
-        self.health =10        
+        self.health =random.randint(15,20)      
     
     def obj_num(self):
         global Object_Count
@@ -368,7 +368,8 @@ class Object:
 
     def rescale(self):
         self.image = pygame.transform.scale(self.image, (self.size, self.size))        
-    
+           
+
     def collide(self, x,y):
         '''
         Discovers collisions, returns True if collision exists
@@ -429,15 +430,16 @@ class Object:
         
         min_distance = min(self.distance_dict.values())
         if min_distance >400:
+            
             return 
         else:
             self.direction = min(self.distance_dict, key=self.distance_dict.get)
         
     def move(self):
         self.create_attack()          
-                
+        random_dir = self.choices[random.randint(0,len(self.choices)-1)]       
         if self.direction == None:
-            self.direction = self.choices[random.randint(0,len(self.choices)-1)]
+            self.direction = random_dir
             
         Objects[self.Obj_num] = (self.x, self.y, self.size)         
         
@@ -446,18 +448,17 @@ class Object:
             
             C = self.collide(curr, self.y)
             if C == True:
+                self.direction = random_dir
                 return 
             elif C == 'Hit':
                                 
                 new_x, new_y =  pushback(curr,self.y, Sword_Direction)
-                if self.collide(new_x, new_y) == True:
-                    
+                if self.collide(new_x, new_y) == True:                    
                     return  
                 if off_walls(new_x,new_y, self.size)==True:
                     self.x = new_x
                     self.y = new_y
-                    self.rect.center = (self.x, self.y)
-                    
+                    self.rect.center = (self.x, self.y)                    
                     return 
                 else:
                     return  
@@ -465,6 +466,7 @@ class Object:
             if curr <=WIDTH - .5*self.size-Wall.Wall_Depth: 
                 self.x = curr
                 self.rect.center = (self.x, self.y)
+                self.direction=='R'
             else:                
                 self.direction = 'L'
 
@@ -474,6 +476,7 @@ class Object:
             
             C = self.collide(curr, self.y)
             if C == True:
+                self.direction =random_dir
                 return 
             elif C == 'Hit':
                                 
@@ -484,7 +487,6 @@ class Object:
                     self.x = new_x
                     self.y = new_y
                     self.rect.center = (self.x, self.y)
-                    self.direction = Sword_Direction
                     return 
                 else:
                     return      
@@ -492,6 +494,7 @@ class Object:
             if curr >0+.5*self.size+Wall.Wall_Depth:
                 self.x = curr
                 self.rect.center = (self.x, self.y)
+                self.direction = 'L'
             else:
                 self.direction = 'R'               
                 
@@ -501,6 +504,7 @@ class Object:
             
             C = self.collide(self.x, curr)
             if C == True:
+                self.direction =random_dir
                 return 
             elif C == 'Hit':
                                 
@@ -511,7 +515,6 @@ class Object:
                     self.x = new_x
                     self.y = new_y
                     self.rect.center = (self.x, self.y)
-                    self.direction = Sword_Direction
                     return 
                 else:
                     return      
@@ -519,6 +522,7 @@ class Object:
             if curr >0 + .5*self.size+ Wall.Wall_Depth:           
                 self.y = curr
                 self.rect.center = (self.x, self.y)
+                self.direction == 'U'
             else:
                 self.direction = 'D'
 
@@ -527,9 +531,9 @@ class Object:
             
             C = self.collide(self.x, curr)
             if C == True:
+                self.direction =random_dir
                 return 
-            elif C == 'Hit':
-                                
+            elif C == 'Hit':                                
                 new_x, new_y =  pushback(self.x,curr, Sword_Direction)
                 if self.collide(new_x, new_y) == True:
                     return  
@@ -537,7 +541,6 @@ class Object:
                     self.x = new_x
                     self.y = new_y
                     self.rect.center = (self.x, self.y)
-                    self.direction = Sword_Direction
                     return 
                 else:
                     return  
@@ -545,11 +548,12 @@ class Object:
             if curr < HEIGHT- .5*self.size-Wall.Wall_Depth:
                 self.y = curr
                 self.rect.center = (self.x, self.y)
+                self.direction = 'D'
             else:
                 self.direction = 'U'
 
-Player = Link(link_down,500,500,75,5)
-L = Level(2,5,75,50,3)
+Player = Link(link_down,500,500,75,10)
+L = Level(10,5,75,50,3)
 
 while True:
     clock.tick(FPS)
@@ -566,14 +570,18 @@ while True:
     
     for enemy in L.Object_List:
         if enemy.can_move==True:
-            enemy.move()
-            screen.blit(enemy.image, enemy.rect)
+            if enemy.health >0:
+                enemy.move()            
+                
+                screen.blit(enemy.image, enemy.rect)
+            elif enemy.health <=0:
+                Objects[enemy.Obj_num]= (-1000,-1000,0)    
         else:
             screen.blit(enemy.image, enemy.rect)
     
     Player.find_image()
     screen.blit(Player.image, Player.rect)
-    if Objects[Sword_Placement][0]  !=-1000:
+    if Objects[Sword_Placement][0]!=-1000:
         
         screen.blit(Player.sword.image, Player.sword.rect)    
         
