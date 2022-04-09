@@ -468,7 +468,7 @@ class Object:
                 if self.attack_distance>=400:
                     self.attack_distance = 0
                     
-                self.direction = random_dir                
+                self.direction = choose_new_path(self.choices, self.direction)               
                 return 
             elif C == 'Hit':
                                 
@@ -502,7 +502,7 @@ class Object:
                 if self.attack_distance>=400:
                     self.attack_distance = 0
                     
-                self.direction = random_dir                
+                self.direction = choose_new_path(self.choices, self.direction)               
                 return 
             elif C == 'Hit':
                                 
@@ -535,7 +535,7 @@ class Object:
                 if self.attack_distance>=400:
                     self.attack_distance = 0
                     
-                self.direction = random_dir                
+                self.direction = choose_new_path(self.choices, self.direction)                
                 return 
             elif C == 'Hit':
                                 
@@ -567,7 +567,7 @@ class Object:
                 if self.attack_distance>=400:
                     self.attack_distance = 0
                     
-                self.direction = random_dir                
+                self.direction = choose_new_path(self.choices, self.direction)                
                 return 
             elif C == 'Hit':                                
                 new_x, new_y =  pushback(self.x,curr, Sword_Direction)
