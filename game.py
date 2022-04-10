@@ -66,10 +66,12 @@ def pushback(x,y, direction):
         return x-100,y
     elif direction == 'R':
         return x+100,y
+
 def off_walls(x,y,size):
     if x <= WIDTH - .5*size-Wall.Wall_Depth and x>0+.5*size+Wall.Wall_Depth:
         if y >0 + .5*size+ Wall.Wall_Depth and y < HEIGHT- .5*size-Wall.Wall_Depth:
             return True                 
+
 def choose_new_path(LIST, DIR):
     l = LIST.copy()
     l.remove(DIR)
@@ -362,8 +364,7 @@ class Object:
         self.distance_dict = {}
         self.attacking = False
         self.health =random.randint(15,20)
-        self.attack_distance = 400
-                         
+        self.attack_distance = 400                         
     
     def obj_num(self):
         global Object_Count
@@ -373,8 +374,7 @@ class Object:
         return Obj_Num        
 
     def rescale(self):
-        self.image = pygame.transform.scale(self.image, (self.size, self.size))        
-           
+        self.image = pygame.transform.scale(self.image, (self.size, self.size))           
 
     def collide(self, x,y):
         '''
@@ -418,14 +418,16 @@ class Object:
                 if self.collide(x, y) ==False:
                     self.distance_dict[Dir] = attack_distance(x,y)
                 else:
-                    self.distance_dict[Dir] = 1000            
+                    self.distance_dict[Dir] = 1000
+
             if Dir == 'L':
                 x = self.x - self.speed
                 y = self.y 
                 if self.collide(x, y) ==False:
                     self.distance_dict[Dir] = attack_distance(x,y)
                 else:
-                    self.distance_dict[Dir] = 1000     
+                    self.distance_dict[Dir] = 1000
+
             if Dir == 'R':
                 x = self.x + self.speed
                 y = self.y 
@@ -434,14 +436,12 @@ class Object:
                 else:
                     self.distance_dict[Dir] = 1000
         
-        min_distance = min(self.distance_dict.values())
-        
+        min_distance = min(self.distance_dict.values())        
         if min_distance >self.attack_distance:            
             return 
 
         else:
-            self.direction = min(self.distance_dict, key=self.distance_dict.get)
-            
+            self.direction = min(self.distance_dict, key=self.distance_dict.get)           
         
     def move(self):
         
@@ -452,7 +452,8 @@ class Object:
             if self.attack_distance >=400:
                 self.attack_distance = 400
 
-        random_dir = self.choices[random.randint(0,len(self.choices)-1)]       
+        random_dir = self.choices[random.randint(0,len(self.choices)-1)]
+               
         if self.direction == None:
             self.direction = random_dir
             
@@ -460,16 +461,14 @@ class Object:
         
         if self.direction=='R':
             curr = self.x + self.speed            
-            
-            C = self.collide(curr+self.speed, self.y)
-            
+            C = self.collide(curr+self.speed, self.y)            
             if C == True:
                 
                 if self.attack_distance>=400:
-                    self.attack_distance = 0
-                    
+                    self.attack_distance = 0                   
                 self.direction = choose_new_path(self.choices, self.direction)               
-                return 
+                return
+
             elif C == 'Hit':
                                 
                 new_x, new_y =  pushback(curr,self.y, Sword_Direction)
@@ -488,22 +487,18 @@ class Object:
                 self.rect.center = (self.x, self.y)
                 self.direction=='R'
             else:
-
                 self.direction = 'L'
 
-        elif self.direction == 'L':
-            
-            curr = self.x - self.speed
-            
-            C = self.collide(curr-self.speed, self.y)
-            
+        elif self.direction == 'L':            
+            curr = self.x - self.speed            
+            C = self.collide(curr-self.speed, self.y)            
             if C == True:
                 
                 if self.attack_distance>=400:
-                    self.attack_distance = 0
-                    
+                    self.attack_distance = 0                    
                 self.direction = choose_new_path(self.choices, self.direction)               
                 return 
+            
             elif C == 'Hit':
                                 
                 new_x, new_y =  pushback(curr,self.y, Sword_Direction)
@@ -526,19 +521,15 @@ class Object:
                 
         elif self.direction == 'U':
             
-            curr = self.y - self.speed
-            
-            C = self.collide(self.x, curr-self.speed)
-            
-            if C == True:
-                
+            curr = self.y - self.speed            
+            C = self.collide(self.x, curr-self.speed)            
+            if C == True:                
                 if self.attack_distance>=400:
-                    self.attack_distance = 0
-                    
+                    self.attack_distance = 0                    
                 self.direction = choose_new_path(self.choices, self.direction)                
                 return 
-            elif C == 'Hit':
-                                
+            
+            elif C == 'Hit':                                
                 new_x, new_y =  pushback(self.x,curr, Sword_Direction)
                 if self.collide(new_x, new_y) == True:
                     return  
@@ -558,17 +549,14 @@ class Object:
                 self.direction = 'D'
 
         elif self.direction == 'D':
-            curr = self.y + self.speed           
-            
-            C = self.collide(self.x, curr+self.speed)
-            
-            if C == True:
-                
+            curr = self.y + self.speed            
+            C = self.collide(self.x, curr+self.speed)            
+            if C == True:                
                 if self.attack_distance>=400:
-                    self.attack_distance = 0
-                    
+                    self.attack_distance = 0                    
                 self.direction = choose_new_path(self.choices, self.direction)                
-                return 
+                return
+
             elif C == 'Hit':                                
                 new_x, new_y =  pushback(self.x,curr, Sword_Direction)
                 if self.collide(new_x, new_y) == True:
@@ -589,7 +577,7 @@ class Object:
                 self.direction = 'U'
 
 Player = Link(link_down,500,500,75,10)
-L = Level(4,5,75,50,3)
+L = Level(1,1,75,50,3)
 
 while True:
     clock.tick(FPS)
@@ -617,6 +605,7 @@ while True:
     
     Player.find_image()
     screen.blit(Player.image, Player.rect)
+
     if Objects[Sword_Placement][0]!=-1000:
         
         screen.blit(Player.sword.image, Player.sword.rect)    
