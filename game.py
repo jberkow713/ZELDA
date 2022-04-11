@@ -44,6 +44,7 @@ Sword_Placement = None
 Sword_Direction = None
 Object_Count = 0
 Objects = []
+Projectiles = []
 
 def attack_distance(x,y):
     
@@ -279,7 +280,8 @@ class Level:
         self.set_room()            
     
     def set_room(self):        
-        # Enemies
+        # Enemies               
+
         for _ in range(self.enemies):
             Enemy_SIZE = self.enemy_size
             Tree_Size = self.land_size
@@ -358,7 +360,8 @@ class Object:
         self.distance_dict = {}
         self.attacking = False
         self.health =random.randint(15,20)
-        self.attack_distance = 400                         
+        self.attack_distance = 400
+        self.dead = False                          
     
     def obj_num(self):
         global Object_Count
@@ -394,6 +397,16 @@ class Object:
             if collision(location, Loc)==True:
                 return True              
         return False   
+    
+    #TODO Create enemy projectile firing
+    def shoot_projectile(self):
+        # If enemy within certain x range and y range lines up, or certain y range and x range lines up, 
+        # Based on the enemy direction, projectile will be shot at Link, it will go until off screen, needs to be 
+        # tracked until off screen, then removed from list,
+        # each projectile stored in Global List, once fired, will track to see if it hits link, 
+        # will track to see if it's off screen, and once it is, it will be removed from the global list
+        pass
+
 
     def create_attack(self):
         
@@ -562,9 +575,8 @@ class Object:
                 self.direction = 'D'
             else:
                 self.direction = 'U'
-
-Player = Link(link_down,500,500,75,10)
-L = Level(5,6,75,50,3)
+Dead = 0
+E = 0
 
 while True:
     clock.tick(FPS)
@@ -573,20 +585,38 @@ while True:
             sys.exit() 
     screen.fill(WHITE)
     
-    for wall in L.Wall_List:
-        screen.blit(wall.image, wall.rect)
+    # To Start Level
+    if Dead == E:
+        print('New Level')
+        Level_Reset = True        
+        
+    if Level_Reset == True:
+        E = 0
+        Objects.clear()
+        Object_Count = 0
+        Player = Link(link_down,500,500,75,10)
+        L = Level(5,6,75,50,3)
+        E += L.enemies
+        Level_Reset = False               
+           
+    for WaLL in L.Wall_List:
+        screen.blit(WaLL.image, WaLL.rect)
     
     Objects[Sword_Placement] = (-1000,-1000,Sword.SIZE) 
     Player.move()   
     
+    Dead = 0 
     for enemy in L.Object_List:
         if enemy.can_move==True:
+            
             if enemy.health >0:
                 enemy.move()            
                 
                 screen.blit(enemy.image, enemy.rect)
             elif enemy.health <=0:
-                Objects[enemy.Obj_num]= (-1000,-1000,0)    
+                Objects[enemy.Obj_num]= (-1000,-1000,0)
+                enemy.dead = True
+                Dead +=1    
         else:
             screen.blit(enemy.image, enemy.rect)
     
