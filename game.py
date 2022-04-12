@@ -509,10 +509,9 @@ class Object:
             curr = self.x + self.speed            
             C = self.collide(curr+self.speed, self.y)
             
-            if self.forced_move == False:
-
-                if C == True:
-
+            
+            if C == True:
+                if self.forced_move == False:         
                     if self.attacking == True:
                         if self.Obj_Collision == True:
 
@@ -522,9 +521,9 @@ class Object:
                             self.forced_direction = self.direction
                             self.forced_move = True
                         return 
-                                            
-                    self.direction = random_dir
-                    return            
+                                        
+                self.direction = random_dir
+                return            
                                 
 
             elif C == 'Hit':
@@ -554,8 +553,9 @@ class Object:
         elif self.direction == 'L':            
             curr = self.x - self.speed            
             C = self.collide(curr-self.speed, self.y)
-            if self.forced_move == False:            
-                if C == True:
+                      
+            if C == True:
+                if self.forced_move == False: 
                     if self.attacking == True:
                         if self.Obj_Collision == True:
 
@@ -563,9 +563,9 @@ class Object:
                             self.forced_direction = self.direction
                             self.forced_move = True
                             return 
-                                                    
-                    self.direction = random_dir
-                    return     
+                                                
+                self.direction = random_dir
+                return     
 
             elif C == 'Hit':
                                 
@@ -594,8 +594,9 @@ class Object:
             
             curr = self.y - self.speed            
             C = self.collide(self.x, curr-self.speed)
-            if self.forced_move == False:            
-                if C == True:
+                      
+            if C == True:
+                if self.forced_move == False:  
                     if self.attacking == True:
                         if self.Obj_Collision == True:
 
@@ -603,9 +604,9 @@ class Object:
                             self.forced_direction = self.direction
                             self.forced_move = True
                             return                               
-                    
-                    self.direction = random_dir
-                    return     
+                
+                self.direction = random_dir
+                return     
 
             elif C == 'Hit':                                
                 new_x, new_y =  pushback(self.x,curr, Sword_Direction,100)
@@ -632,8 +633,9 @@ class Object:
         elif self.direction == 'D':
             curr = self.y + self.speed            
             C = self.collide(self.x, curr+self.speed)
-            if self.forced_move == False:            
-                if C == True: 
+                       
+            if C == True:
+                if self.forced_move == False:  
                     if self.attacking == True:
                         if self.Obj_Collision == True:
 
@@ -641,9 +643,9 @@ class Object:
                             self.forced_direction = self.direction
                             self.forced_move = True
                             return                   
-                
-                    self.direction = random_dir
-                    return     
+            
+                self.direction = random_dir
+                return     
 
             elif C == 'Hit':                                
                 new_x, new_y =  pushback(self.x,curr, Sword_Direction,100)
@@ -686,7 +688,7 @@ while True:
         Objects.clear()
         Object_Count = 0
         Player = Link(link_down,500,500,75,10)
-        L = Level(1,4,75,50,3)
+        L = Level(3,4,75,50,3)
         E += L.enemies
         Level_Reset = False               
            
