@@ -367,6 +367,7 @@ class Object:
         self.dead = False
         self.Obj_Collision = False
         self.forced_move = False
+        self.forced_direction = None
         self.forced_counter = 0
         
                                
@@ -400,14 +401,16 @@ class Object:
             return 'Hit'
         # Collision for other objects
         for object in Other_Objects:
-            
+                        
             # Other object locations
             Loc = find_boundaries(object[0], object[1], object[2])
             if collision(location, Loc)==True:
                 if object[3]==False:
                     self.Obj_Collision = True
+                    return True
 
-                return True              
+                self.Obj_Collision=False
+                return True        
         
         
         return False   
@@ -420,6 +423,26 @@ class Object:
         # each projectile stored in Global List, once fired, will track to see if it hits link, 
         # will track to see if it's off screen, and once it is, it will be removed from the global list
         pass
+    def choose_dir(self, dirs):
+        x = Objects[Link_Placement][0]
+        y = Objects[Link_Placement][1]
+
+        if dirs == 'U':
+            Down = abs((self.y +1)-y) 
+            Up = abs((self.y -1) - y)
+            if Down < Up:
+                return 'D'
+            else:
+                return 'U'
+
+        if dirs == 'R':
+            Right = abs((self.x +1)-x) 
+            Left = abs((self.x -1) - x)
+            if Right < Left:
+                return 'R'
+            else:
+                return 'L'
+
 
 
     def create_attack(self):
@@ -459,41 +482,49 @@ class Object:
 
         else:
             self.direction = min(self.distance_dict, key=self.distance_dict.get)
-            self.attacking = True            
+            self.attacking = True
+            return             
         
     def move(self):
 
         random_dir = self.choices[random.randint(0,len(self.choices)-1)]    
         if self.direction == None:            
             self.direction = random_dir
+               
         
-        if self.forced_counter ==25:
-            self.forced_move = False
-            self.forced_counter = 0 
-
         if self.forced_move ==False:
             self.create_attack()
-        elif self.forced_move == True:
+        
+        if self.forced_move == True:
+            self.direction = self.forced_direction
             self.forced_counter +=1
-
+        if self.forced_counter ==45:
+            self.forced_move = False
+            self.forced_counter = 0 
 
             
         Objects[self.Obj_num] = (self.x, self.y, self.size, self.can_move)         
         
         if self.direction=='R':
             curr = self.x + self.speed            
-            C = self.collide(curr+self.speed, self.y)            
-            if C == True:
+            C = self.collide(curr+self.speed, self.y)
+            
+            if self.forced_move == False:
 
-                if self.attacking == True:
-                    if self.Obj_Collision == True:
+                if C == True:
 
-                        self.direction = choose_new_path(self.choices, ['R','L'])
-                        self.forced_move = True
-                    return 
-                                        
-                self.direction = random_dir
-                return            
+                    if self.attacking == True:
+                        if self.Obj_Collision == True:
+
+                            self.direction = self.choose_dir('U')
+                            # TODO create function here that evaluates moving both directions, and takes one
+                            # That moves enemy closer to link
+                            self.forced_direction = self.direction
+                            self.forced_move = True
+                        return 
+                                            
+                    self.direction = random_dir
+                    return            
                                 
 
             elif C == 'Hit':
@@ -522,17 +553,19 @@ class Object:
 
         elif self.direction == 'L':            
             curr = self.x - self.speed            
-            C = self.collide(curr-self.speed, self.y)            
-            if C == True:
-                if self.attacking == True:
-                    if self.Obj_Collision == True:
+            C = self.collide(curr-self.speed, self.y)
+            if self.forced_move == False:            
+                if C == True:
+                    if self.attacking == True:
+                        if self.Obj_Collision == True:
 
-                        self.direction = choose_new_path(self.choices,['R','L'])
-                        self.forced_move = True
-                        return 
-                                                
-                self.direction = random_dir
-                return     
+                            self.direction = self.choose_dir('U')
+                            self.forced_direction = self.direction
+                            self.forced_move = True
+                            return 
+                                                    
+                    self.direction = random_dir
+                    return     
 
             elif C == 'Hit':
                                 
@@ -560,17 +593,19 @@ class Object:
         elif self.direction == 'U':
             
             curr = self.y - self.speed            
-            C = self.collide(self.x, curr-self.speed)            
-            if C == True:
-                if self.attacking == True:
-                    if self.Obj_Collision == True:
+            C = self.collide(self.x, curr-self.speed)
+            if self.forced_move == False:            
+                if C == True:
+                    if self.attacking == True:
+                        if self.Obj_Collision == True:
 
-                        self.direction = choose_new_path(self.choices,['U','D'])
-                        self.forced_move = True
-                        return                               
-                
-                self.direction = random_dir
-                return     
+                            self.direction = self.choose_dir('R')
+                            self.forced_direction = self.direction
+                            self.forced_move = True
+                            return                               
+                    
+                    self.direction = random_dir
+                    return     
 
             elif C == 'Hit':                                
                 new_x, new_y =  pushback(self.x,curr, Sword_Direction,100)
@@ -596,17 +631,19 @@ class Object:
 
         elif self.direction == 'D':
             curr = self.y + self.speed            
-            C = self.collide(self.x, curr+self.speed)            
-            if C == True: 
-                if self.attacking == True:
-                    if self.Obj_Collision == True:
+            C = self.collide(self.x, curr+self.speed)
+            if self.forced_move == False:            
+                if C == True: 
+                    if self.attacking == True:
+                        if self.Obj_Collision == True:
 
-                        self.direction = choose_new_path(self.choices,['U','D'])
-                        self.forced_move = True
-                        return                   
-               
-                self.direction = random_dir
-                return     
+                            self.direction = self.choose_dir('R')
+                            self.forced_direction = self.direction
+                            self.forced_move = True
+                            return                   
+                
+                    self.direction = random_dir
+                    return     
 
             elif C == 'Hit':                                
                 new_x, new_y =  pushback(self.x,curr, Sword_Direction,100)
@@ -649,7 +686,7 @@ while True:
         Objects.clear()
         Object_Count = 0
         Player = Link(link_down,500,500,75,10)
-        L = Level(3,4,75,50,3)
+        L = Level(1,4,75,50,3)
         E += L.enemies
         Level_Reset = False               
            
