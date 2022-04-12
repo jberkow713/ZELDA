@@ -74,9 +74,10 @@ def off_walls(x,y,size):
         if y >0 + .5*size+ Wall.Wall_Depth and y < HEIGHT- .5*size-Wall.Wall_Depth:
             return True                 
 
-def choose_new_path(LIST, DIR):
+def choose_new_path(LIST, LST2):
     l = LIST.copy()
-    l.remove(DIR)
+    for val in LST2:
+        l.remove(val)
     return l[random.randint(0,len(l)-1)]
 
 def collision(a,b):
@@ -361,13 +362,18 @@ class Object:
         self.attacking = False
         self.health =random.randint(15,20)
         self.attack_distance = 400
-        self.dead = False                          
+        self.dead = False
+        self.Obj_Collision=False
+        self.smart_choices = []
+        self.collided_with_obj = False
+        self.next_dir = None
+        self.collided = []                         
     
     def obj_num(self):
         global Object_Count
         Obj_Num = Object_Count
         Object_Count +=1
-        Objects.append((self.x,self.y, self.size))
+        Objects.append((self.x,self.y, self.size, self.can_move))
         return Obj_Num        
 
     def rescale(self):
@@ -381,7 +387,7 @@ class Object:
         # This is now a list of all other objects outside of itself
         Other_Objects = Objects.copy()
         Other_Objects.remove(Other_Objects[self.Obj_num])
-        
+                
         location = find_boundaries(x,y,self.size)      
         # First checking for sword collision
         Sword = Objects[Sword_Placement]
@@ -395,7 +401,12 @@ class Object:
             # Other object locations
             Loc = find_boundaries(object[0], object[1], object[2])
             if collision(location, Loc)==True:
+                if object[3] == False:
+                    self.collided_with_obj = True
+
+                self.collided.append((object[0],object[1]))
                 return True              
+        
         return False   
     
     #TODO Create enemy projectile firing
@@ -439,23 +450,54 @@ class Object:
                 else:
                     self.distance_dict[Dir] = 1000
                      
-        if min(self.distance_dict.values())>self.attack_distance:            
+        if min(self.distance_dict.values())>self.attack_distance:
+            self.attacking = False            
             return 
 
         else:
-            self.direction = min(self.distance_dict, key=self.distance_dict.get)           
+            self.direction = min(self.distance_dict, key=self.distance_dict.get)
+            self.attacking = True            
         
     def move(self):
-        
-        self.create_attack()
 
-        if self.attack_distance<400:
-            self.attack_distance +=10
-            if self.attack_distance >=400:
-                self.attack_distance = 400
-              
-        if self.direction == None:
-            self.direction = self.choices[random.randint(0,len(self.choices)-1)]
+        random_dir = self.choices[random.randint(0,len(self.choices)-1)]    
+        if self.direction == None:            
+            self.direction = random_dir
+
+        if self.Obj_Collision == True:
+            return
+            # TODO
+            #The options of direction ghost can move are now in self.smart_choices. 
+            #Objects x, y coords are stored in self.collided
+
+            #So in this case, we want to go directions in self.smart_choices, 
+            # This means we need to figure out, which direction to go in
+
+            # So of the two directions in self.smart_choices , figure out which one 
+            # gets it beyond the borders of the object it needs to go
+            # So if 'R' is in self.smart_choices, this needs to figure out a way beyond the x boundary
+            # if 'U' in self.smart_choices, figure out fastest way beyond y boundary
+            
+            # if tie, won't happen often, but choose randomly
+            # At this point, have to allow the creature to move,
+            
+            # so self.obj_collision = False
+            # we set self.attacking = False
+            # self.direction = '?'
+
+            # return
+                      
+
+        
+        if self.Obj_Collision == False:
+            if self.next_dir == None:
+
+
+                self.collided_with_obj = False
+                self.smart_choices.clear()
+                self.collided.clear()
+                self.create_attack()       
+       
             
         Objects[self.Obj_num] = (self.x, self.y, self.size)         
         
@@ -464,10 +506,19 @@ class Object:
             C = self.collide(curr+self.speed, self.y)            
             if C == True:
                 
-                if self.attack_distance>=400:
-                    self.attack_distance = 0                   
-                self.direction = choose_new_path(self.choices, self.direction)               
-                return
+                if self.attacking == True:
+                    if self.collided_with_obj == True:
+
+                        self.next_dir = 'R'
+                        self.smart_choices.append('U')
+                        self.smart_choices.append('D')
+                        self.Obj_Collision = True
+                        return                
+                
+                    self.direction = random_dir
+                    return
+                self.direction = random_dir
+                return    
 
             elif C == 'Hit':
                                 
@@ -482,23 +533,47 @@ class Object:
                 else:
                     return  
             # collision with edge of level
+            
             if curr <=WIDTH - .5*self.size-Wall.Wall_Depth: 
                 self.x = curr
                 self.rect.center = (self.x, self.y)
+                
+                # if self.Obj_Collision==False and self.next_dir!=None:
+                # Need to track the coordinate versus object coordinate,
+                # check if objects x, or y coord, is past necessary x or y coord of object,
+                # then set self.direction = self.next_dir
+                # return
+                # 
+                # if self.direction == self.dir:
+                # if the x, or y coord is beyond the object x or y, 
+                # self.next_dir == None, run the direction
+
                 self.direction=='R'
+
             else:
                 self.direction = 'L'
+                
 
         elif self.direction == 'L':            
             curr = self.x - self.speed            
             C = self.collide(curr-self.speed, self.y)            
             if C == True:
                 
-                if self.attack_distance>=400:
-                    self.attack_distance = 0                    
-                self.direction = choose_new_path(self.choices, self.direction)               
-                return 
-            
+                if self.attacking == True:
+                    if self.collided_with_obj == True:
+
+
+                        self.next_dir = 'L'
+                        self.smart_choices.append('R')
+                        self.smart_choices.append('L')                
+                        self.Obj_Collision = True                 
+                        return
+                    self.direction = random_dir
+                    return    
+                
+                self.direction = random_dir
+                return     
+
             elif C == 'Hit':
                                 
                 new_x, new_y =  pushback(curr,self.y, Sword_Direction,100)
@@ -515,20 +590,43 @@ class Object:
             if curr >0+.5*self.size+Wall.Wall_Depth:
                 self.x = curr
                 self.rect.center = (self.x, self.y)
+
+                # if self.Obj_Collision==False and self.next_dir!=None:
+                # Need to track the coordinate versus object coordinate,
+                # check if objects x, or y coord, is past necessary x or y coord of object,
+                # then set self.direction = self.next_dir
+                # return
+                # 
+                # if self.direction == self.dir:
+                # if the x, or y coord is beyond the object x or y, 
+                # self.next_dir == None, run the direction
+
                 self.direction = 'L'
+               
             else:
-                self.direction = 'R'               
+                self.direction = 'R'
+                             
                 
         elif self.direction == 'U':
             
             curr = self.y - self.speed            
             C = self.collide(self.x, curr-self.speed)            
             if C == True:                
-                if self.attack_distance>=400:
-                    self.attack_distance = 0                    
-                self.direction = choose_new_path(self.choices, self.direction)                
-                return 
-            
+
+                if self.attacking == True:
+                    if self.collided_with_obj == True:
+
+                        self.next_dir = 'U'    
+                        self.smart_choices.append('U')
+                        self.smart_choices.append('D')               
+                        self.Obj_Collision = True                  
+                        return
+                    self.direction = random_dir
+                    return     
+                
+                self.direction = random_dir
+                return     
+
             elif C == 'Hit':                                
                 new_x, new_y =  pushback(self.x,curr, Sword_Direction,100)
                 if self.collide(new_x, new_y) == True:
@@ -544,18 +642,41 @@ class Object:
             if curr >0 + .5*self.size+ Wall.Wall_Depth:           
                 self.y = curr
                 self.rect.center = (self.x, self.y)
-                self.direction == 'U'
+
+                # if self.Obj_Collision==False and self.next_dir!=None:
+                # Need to track the coordinate versus object coordinate,
+                # check if objects x, or y coord, is past necessary x or y coord of object,
+                # then set self.direction = self.next_dir
+                # return
+                # 
+                # if self.direction == self.dir:
+                # if the x, or y coord is beyond the object x or y, 
+                # self.next_dir == None, run the direction
+
+                self.direction == 'U'                
+                
             else:
                 self.direction = 'D'
+                
 
         elif self.direction == 'D':
             curr = self.y + self.speed            
             C = self.collide(self.x, curr+self.speed)            
             if C == True:                
-                if self.attack_distance>=400:
-                    self.attack_distance = 0                    
-                self.direction = choose_new_path(self.choices, self.direction)                
-                return
+
+                if self.attacking == True:
+                    if self.collided_with_obj == True:
+
+
+                        self.next_dir = 'D'    
+                        self.smart_choices.append('U')
+                        self.smart_choices.append('D')                     
+                        self.Obj_Collision = True                  
+                        return
+                    self.direction = random_dir
+                    return    
+                self.direction = random_dir
+                return     
 
             elif C == 'Hit':                                
                 new_x, new_y =  pushback(self.x,curr, Sword_Direction,100)
@@ -572,9 +693,24 @@ class Object:
             if curr < HEIGHT- .5*self.size-Wall.Wall_Depth:
                 self.y = curr
                 self.rect.center = (self.x, self.y)
+
+                # if self.Obj_Collision==False and self.next_dir!=None:
+                # Need to track the coordinate versus object coordinate,
+                # check if objects x, or y coord, is past necessary x or y coord of object,
+                # then set self.direction = self.next_dir
+                # return
+                # 
+                # if self.direction == self.dir:
+                # if the x, or y coord is beyond the object x or y, 
+                # self.next_dir == None, run the direction
+
+
+
                 self.direction = 'D'
+                
             else:
                 self.direction = 'U'
+                
 Dead = 0
 E = 0
 
@@ -595,7 +731,7 @@ while True:
         Objects.clear()
         Object_Count = 0
         Player = Link(link_down,500,500,75,10)
-        L = Level(5,6,75,50,3)
+        L = Level(1,3,75,50,3)
         E += L.enemies
         Level_Reset = False               
            
