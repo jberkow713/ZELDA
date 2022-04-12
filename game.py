@@ -163,6 +163,7 @@ class Link:
         self.speed = speed
         self.rescale()
         self.direction = 'D'
+        self.can_move = True
         self.Obj_num = self.obj_num()
         self.rect = self.image.get_rect()
         self.rect.center = (self.x, self.y)
@@ -173,7 +174,7 @@ class Link:
         global Link_Placement
         Link_Placement = Obj_Num = Object_Count
         Object_Count +=1
-        Objects.append((self.x,self.y, self.size))
+        Objects.append((self.x,self.y, self.size, self.can_move))
         return Obj_Num        
     
     def find_image(self):
@@ -213,7 +214,7 @@ class Link:
     def move(self):
         keys = pygame.key.get_pressed()
         
-        Objects[self.Obj_num] = (self.x, self.y, self.size)
+        Objects[self.Obj_num] = (self.x, self.y, self.size, self.can_move)
 
         if keys[pygame.K_RETURN]:
             self.sword.load_sword()
@@ -398,14 +399,17 @@ class Object:
             return 'Hit'
         # Collision for other objects
         for object in Other_Objects:
+            
             # Other object locations
             Loc = find_boundaries(object[0], object[1], object[2])
             if collision(location, Loc)==True:
+
                 if object[3] == False:
                     self.collided_with_obj = True
 
                 self.collided.append((object[0],object[1]))
                 return True              
+        
         
         return False   
     
@@ -463,10 +467,11 @@ class Object:
         random_dir = self.choices[random.randint(0,len(self.choices)-1)]    
         if self.direction == None:            
             self.direction = random_dir
-
-        if self.Obj_Collision == True:
-            return
-            # TODO
+        
+        # TODO
+        # if self.Obj_Collision == True:
+        #     pass
+        
             #The options of direction ghost can move are now in self.smart_choices. 
             #Objects x, y coords are stored in self.collided
 
@@ -486,18 +491,15 @@ class Object:
             # self.direction = '?'
 
             # return
-                      
-
-        
+                    
         if self.Obj_Collision == False:
             if self.next_dir == None:
-
 
                 self.collided_with_obj = False
                 self.smart_choices.clear()
                 self.collided.clear()
-                self.create_attack()       
-       
+                self.create_attack()
+                      
             
         Objects[self.Obj_num] = (self.x, self.y, self.size)         
         
@@ -514,9 +516,12 @@ class Object:
                         self.smart_choices.append('D')
                         self.Obj_Collision = True
                         return                
-                
+
+                    
                     self.direction = random_dir
                     return
+                
+                
                 self.direction = random_dir
                 return    
 
@@ -562,12 +567,12 @@ class Object:
                 if self.attacking == True:
                     if self.collided_with_obj == True:
 
-
                         self.next_dir = 'L'
                         self.smart_choices.append('R')
                         self.smart_choices.append('L')                
                         self.Obj_Collision = True                 
                         return
+                    
                     self.direction = random_dir
                     return    
                 
@@ -621,8 +626,10 @@ class Object:
                         self.smart_choices.append('D')               
                         self.Obj_Collision = True                  
                         return
+                    
                     self.direction = random_dir
                     return     
+                
                 
                 self.direction = random_dir
                 return     
@@ -673,8 +680,10 @@ class Object:
                         self.smart_choices.append('D')                     
                         self.Obj_Collision = True                  
                         return
+                    
                     self.direction = random_dir
                     return    
+                
                 self.direction = random_dir
                 return     
 
@@ -703,8 +712,6 @@ class Object:
                 # if self.direction == self.dir:
                 # if the x, or y coord is beyond the object x or y, 
                 # self.next_dir == None, run the direction
-
-
 
                 self.direction = 'D'
                 
