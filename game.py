@@ -354,6 +354,7 @@ class Object:
         self.can_move = can_move 
         self.image = image
         self.rescale()
+        self.can_move = can_move
         self.rect = self.image.get_rect()
         self.rect.center = (self.x, self.y)
         self.direction = None
@@ -364,11 +365,11 @@ class Object:
         self.health =random.randint(15,20)
         self.attack_distance = 400
         self.dead = False
-        self.Obj_Collision=False
-        self.smart_choices = []
-        self.collided_with_obj = False
-        self.next_dir = None
-        self.collided = []                         
+        self.Obj_Collision = False
+        self.forced_move = False
+        self.forced_counter = 0
+        
+                               
     
     def obj_num(self):
         global Object_Count
@@ -403,11 +404,9 @@ class Object:
             # Other object locations
             Loc = find_boundaries(object[0], object[1], object[2])
             if collision(location, Loc)==True:
+                if object[3]==False:
+                    self.Obj_Collision = True
 
-                if object[3] == False:
-                    self.collided_with_obj = True
-
-                self.collided.append((object[0],object[1]))
                 return True              
         
         
@@ -468,62 +467,34 @@ class Object:
         if self.direction == None:            
             self.direction = random_dir
         
-        # TODO
-        # if self.Obj_Collision == True:
-        #     pass
-        
-            #The options of direction ghost can move are now in self.smart_choices. 
-            #Objects x, y coords are stored in self.collided
+        if self.forced_counter ==25:
+            self.forced_move = False
+            self.forced_counter = 0 
 
-            #So in this case, we want to go directions in self.smart_choices, 
-            # This means we need to figure out, which direction to go in
+        if self.forced_move ==False:
+            self.create_attack()
+        elif self.forced_move == True:
+            self.forced_counter +=1
 
-            # So of the two directions in self.smart_choices , figure out which one 
-            # gets it beyond the borders of the object it needs to go
-            # So if 'R' is in self.smart_choices, this needs to figure out a way beyond the x boundary
-            # if 'U' in self.smart_choices, figure out fastest way beyond y boundary
+
             
-            # if tie, won't happen often, but choose randomly
-            # At this point, have to allow the creature to move,
-            
-            # so self.obj_collision = False
-            # we set self.attacking = False
-            # self.direction = '?'
-
-            # return
-                    
-        if self.Obj_Collision == False:
-            if self.next_dir == None:
-
-                self.collided_with_obj = False
-                self.smart_choices.clear()
-                self.collided.clear()
-                self.create_attack()
-                      
-            
-        Objects[self.Obj_num] = (self.x, self.y, self.size)         
+        Objects[self.Obj_num] = (self.x, self.y, self.size, self.can_move)         
         
         if self.direction=='R':
             curr = self.x + self.speed            
             C = self.collide(curr+self.speed, self.y)            
             if C == True:
-                
+
                 if self.attacking == True:
-                    if self.collided_with_obj == True:
+                    if self.Obj_Collision == True:
 
-                        self.next_dir = 'R'
-                        self.smart_choices.append('U')
-                        self.smart_choices.append('D')
-                        self.Obj_Collision = True
-                        return                
-
-                    
-                    self.direction = random_dir
-                    return
-                
-                
+                        self.direction = choose_new_path(self.choices, ['R','L'])
+                        self.forced_move = True
+                    return 
+                                        
                 self.direction = random_dir
-                return    
+                return            
+                                
 
             elif C == 'Hit':
                                 
@@ -543,39 +514,23 @@ class Object:
                 self.x = curr
                 self.rect.center = (self.x, self.y)
                 
-                # if self.Obj_Collision==False and self.next_dir!=None:
-                # Need to track the coordinate versus object coordinate,
-                # check if objects x, or y coord, is past necessary x or y coord of object,
-                # then set self.direction = self.next_dir
-                # return
-                # 
-                # if self.direction == self.dir:
-                # if the x, or y coord is beyond the object x or y, 
-                # self.next_dir == None, run the direction
-
                 self.direction=='R'
 
             else:
-                self.direction = 'L'
+                self.direction = random_dir
                 
 
         elif self.direction == 'L':            
             curr = self.x - self.speed            
             C = self.collide(curr-self.speed, self.y)            
             if C == True:
-                
                 if self.attacking == True:
-                    if self.collided_with_obj == True:
+                    if self.Obj_Collision == True:
 
-                        self.next_dir = 'L'
-                        self.smart_choices.append('R')
-                        self.smart_choices.append('L')                
-                        self.Obj_Collision = True                 
-                        return
-                    
-                    self.direction = random_dir
-                    return    
-                
+                        self.direction = choose_new_path(self.choices,['R','L'])
+                        self.forced_move = True
+                        return 
+                                                
                 self.direction = random_dir
                 return     
 
@@ -595,41 +550,24 @@ class Object:
             if curr >0+.5*self.size+Wall.Wall_Depth:
                 self.x = curr
                 self.rect.center = (self.x, self.y)
-
-                # if self.Obj_Collision==False and self.next_dir!=None:
-                # Need to track the coordinate versus object coordinate,
-                # check if objects x, or y coord, is past necessary x or y coord of object,
-                # then set self.direction = self.next_dir
-                # return
-                # 
-                # if self.direction == self.dir:
-                # if the x, or y coord is beyond the object x or y, 
-                # self.next_dir == None, run the direction
-
+                
                 self.direction = 'L'
                
             else:
-                self.direction = 'R'
+                self.direction = random_dir
                              
                 
         elif self.direction == 'U':
             
             curr = self.y - self.speed            
             C = self.collide(self.x, curr-self.speed)            
-            if C == True:                
-
+            if C == True:
                 if self.attacking == True:
-                    if self.collided_with_obj == True:
+                    if self.Obj_Collision == True:
 
-                        self.next_dir = 'U'    
-                        self.smart_choices.append('U')
-                        self.smart_choices.append('D')               
-                        self.Obj_Collision = True                  
-                        return
-                    
-                    self.direction = random_dir
-                    return     
-                
+                        self.direction = choose_new_path(self.choices,['U','D'])
+                        self.forced_move = True
+                        return                               
                 
                 self.direction = random_dir
                 return     
@@ -650,40 +588,23 @@ class Object:
                 self.y = curr
                 self.rect.center = (self.x, self.y)
 
-                # if self.Obj_Collision==False and self.next_dir!=None:
-                # Need to track the coordinate versus object coordinate,
-                # check if objects x, or y coord, is past necessary x or y coord of object,
-                # then set self.direction = self.next_dir
-                # return
-                # 
-                # if self.direction == self.dir:
-                # if the x, or y coord is beyond the object x or y, 
-                # self.next_dir == None, run the direction
-
                 self.direction == 'U'                
                 
             else:
-                self.direction = 'D'
+                self.direction = random_dir
                 
 
         elif self.direction == 'D':
             curr = self.y + self.speed            
             C = self.collide(self.x, curr+self.speed)            
-            if C == True:                
-
+            if C == True: 
                 if self.attacking == True:
-                    if self.collided_with_obj == True:
+                    if self.Obj_Collision == True:
 
-
-                        self.next_dir = 'D'    
-                        self.smart_choices.append('U')
-                        self.smart_choices.append('D')                     
-                        self.Obj_Collision = True                  
-                        return
-                    
-                    self.direction = random_dir
-                    return    
-                
+                        self.direction = choose_new_path(self.choices,['U','D'])
+                        self.forced_move = True
+                        return                   
+               
                 self.direction = random_dir
                 return     
 
@@ -703,20 +624,10 @@ class Object:
                 self.y = curr
                 self.rect.center = (self.x, self.y)
 
-                # if self.Obj_Collision==False and self.next_dir!=None:
-                # Need to track the coordinate versus object coordinate,
-                # check if objects x, or y coord, is past necessary x or y coord of object,
-                # then set self.direction = self.next_dir
-                # return
-                # 
-                # if self.direction == self.dir:
-                # if the x, or y coord is beyond the object x or y, 
-                # self.next_dir == None, run the direction
-
                 self.direction = 'D'
                 
             else:
-                self.direction = 'U'
+                self.direction = random_dir
                 
 Dead = 0
 E = 0
@@ -738,7 +649,7 @@ while True:
         Objects.clear()
         Object_Count = 0
         Player = Link(link_down,500,500,75,10)
-        L = Level(1,3,75,50,3)
+        L = Level(3,4,75,50,3)
         E += L.enemies
         Level_Reset = False               
            
