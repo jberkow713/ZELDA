@@ -486,16 +486,35 @@ class Object:
             return             
     def create_projectile(self):
         # TODO create projectile objects here
+        Link_X = Objects[Link_Placement][0]
+        Link_Y = Objects[Link_Placement][1]
 
-        pass
+        if abs(Link_X-self.x) <1:
+            if self.y > Link_Y:
+                if self.direction == 'U':
+                    
+                    P = Projectile(weapon, self.x, self.y-self.size/2, 30, 20, self.direction)
+            elif self.y <Link_Y:
+                if self.direction == 'D':
+
+                    P = Projectile(weapon, self.x, self.y+self.size/2, 30, 20, self.direction)
+        if abs(Link_Y-self.y) <1:
+            if self.x > Link_X:
+                if self.direction =='L':
+
+                    P = Projectile(weapon, self.x-self.size/2, self.y, 30, 20, self.direction)
+            elif self.x < Link_X:
+                if self.direction == 'R':
+
+                    P = Projectile(weapon, self.x+self.size/2, self.y, 30, 20, self.direction)        
 
     def move(self):
 
         random_dir = self.choices[random.randint(0,len(self.choices)-1)]    
         if self.direction == None:            
             self.direction = random_dir
-        
-        self.create_projectile()
+        # TODO
+        # self.create_projectile()
         
         if self.forced_move ==False:
             self.create_attack()
