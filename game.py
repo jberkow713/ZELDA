@@ -39,11 +39,14 @@ ghost = pygame.image.load("ghost.png").convert_alpha()
 tree = pygame.image.load("TREE_PNG.png").convert_alpha()
 wall = pygame.image.load("Zelda_Wall.jpg").convert_alpha()
 
+weapon = pygame.image.load("Enemy_Weapon.jpg").convert_alpha()
+
 Link_Placement = None
 Sword_Placement = None
 Sword_Direction = None
 Object_Count = 0
 Objects = []
+Projectile_Count = 0
 Projectiles = []
 
 def attack_distance(x,y):
@@ -168,6 +171,7 @@ class Link:
         self.rect = self.image.get_rect()
         self.rect.center = (self.x, self.y)
         self.sword = Sword(self)
+        self.health = 10
 
     def obj_num(self):
         global Object_Count
@@ -203,8 +207,15 @@ class Link:
         Other_Objects.remove(Other_Objects[0])
         Other_Objects.remove(Other_Objects[0])            
             
-        location = find_boundaries(x,y,self.size)      
-        
+        location = find_boundaries(x,y,self.size)
+
+        for object in Projectiles:
+            if object.off_map == False:
+
+                Loc = find_boundaries(object[0], object[1], object[2])
+                if collision(location, Loc)==True:
+                    self.health -=1
+
         for object in Other_Objects:
             # Other object locations
             Loc = find_boundaries(object[0], object[1], object[2])
@@ -368,8 +379,7 @@ class Object:
         self.Obj_Collision = False
         self.forced_move = False
         self.forced_direction = None
-        self.forced_counter = 0
-        
+        self.forced_counter = 0       
                                
     
     def obj_num(self):
@@ -414,15 +424,7 @@ class Object:
         
         
         return False   
-    
-    #TODO Create enemy projectile firing
-    def shoot_projectile(self):
-        # If enemy within certain x range and y range lines up, or certain y range and x range lines up, 
-        # Based on the enemy direction, projectile will be shot at Link, it will go until off screen, needs to be 
-        # tracked until off screen, then removed from list,
-        # each projectile stored in Global List, once fired, will track to see if it hits link, 
-        # will track to see if it's off screen, and once it is, it will be removed from the global list
-        pass
+        
     def choose_dir(self, dirs):
         x = Objects[Link_Placement][0]
         y = Objects[Link_Placement][1]
@@ -442,8 +444,6 @@ class Object:
                 return 'R'
             else:
                 return 'L'
-
-
 
     def create_attack(self):
         
@@ -484,13 +484,18 @@ class Object:
             self.direction = min(self.distance_dict, key=self.distance_dict.get)
             self.attacking = True
             return             
-        
+    def create_projectile(self):
+        # TODO create projectile objects here
+
+        pass
+
     def move(self):
 
         random_dir = self.choices[random.randint(0,len(self.choices)-1)]    
         if self.direction == None:            
             self.direction = random_dir
-               
+        
+        self.create_projectile()
         
         if self.forced_move ==False:
             self.create_attack()
@@ -667,7 +672,52 @@ class Object:
                 
             else:
                 self.direction = random_dir
-                
+
+class Projectile:
+    def __init__(self,image, x, y, size, speed, direction):
+        self.image = image
+        self.x = x
+        self.y = y
+        self.size = size
+        self.speed = speed
+        self.direction = direction
+        self.rescale()
+        self.Obj_num = self.obj_num()
+        self.rect = self.image.get_rect()
+        self.rect.center = (self.x, self.y)
+        self.off_map = False
+    
+    def obj_num(self):
+
+        global Projectile_Count
+        Obj_Num = Projectile_Count
+        Projectile_Count +=1
+        Projectiles.append((self.x,self.y, self.size))
+        return Obj_Num
+
+    def rescale(self):
+        self.image = pygame.transform.scale(self.image, (self.size, self.size))          
+
+    def move(self):
+        if self.direction == 'U':
+            self.y -=self.speed
+            return 
+        elif self.direction == 'D':
+            self.y +=self.speed
+            return 
+        elif self.direction == 'R':
+            self.x +=self.speed
+            return 
+        elif self.direction == 'L':
+            self.x -=self.speed
+            return
+    def map_check(self):
+        if self.x <0 or self.x >WIDTH or self.y <0 or self.y >HEIGHT:
+            self.off_map = True
+        return                
+
+
+
 Dead = 0
 E = 0
 
@@ -687,6 +737,8 @@ while True:
         E = 0
         Objects.clear()
         Object_Count = 0
+        Projectiles.clear()
+        Projectile_Count = 0
         Player = Link(link_down,500,500,75,10)
         L = Level(3,4,75,50,3)
         E += L.enemies
@@ -706,6 +758,7 @@ while True:
                 enemy.move()            
                 
                 screen.blit(enemy.image, enemy.rect)
+
             elif enemy.health <=0:
                 Objects[enemy.Obj_num]= (-1000,-1000,0)
                 enemy.dead = True
@@ -713,6 +766,19 @@ while True:
         else:
             screen.blit(enemy.image, enemy.rect)
     
+    for P in Projectiles:
+        P.map_check()
+        if P.off_map == False:
+            P.move()
+            P.map_check()
+            if P.off_map == False:
+                Projectiles[P.Obj_num] = P.x, P.y, P.size
+                screen.blit(P.image, P.rect) 
+            elif P.off_Map == True:
+                Projectiles[P.Obj_num] = -100,-100, P.size    
+       
+
+
     Player.find_image()
     screen.blit(Player.image, Player.rect)
 
