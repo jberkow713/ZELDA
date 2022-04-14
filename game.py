@@ -538,14 +538,13 @@ class Object:
 
         random_dir = self.choices[random.randint(0,len(self.choices)-1)]    
         if self.direction == None:            
-            self.direction = random_dir
+            self.direction = random_dir        
         
-        random_shot = random.randint(0,100)
         if self.projectile_num != None:
             self.fire_check()
 
         if self.can_fire ==True:
-            
+            random_shot = random.randint(0,100)            
             if random_shot >50:
                 self.create_projectile()
         
