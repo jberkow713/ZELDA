@@ -494,25 +494,25 @@ class Object:
         Link_Y = Objects[Link_Placement][1]
         # TODO add distance check between enemy and link, can not have firing too close
 
-        if abs(Link_X-self.x) <25:
+        if abs(Link_X-self.x) <10:
             if self.y > Link_Y:
                 if self.direction == 'U':
                     
-                    Projectile_List.append(Projectile(weapon, self.x, self.y-self.size/2, 30, 10, self.direction))
+                    Projectile_List.append(Projectile(weapon, self.x, self.y-self.size/2, 30, 8, self.direction))
 
             elif self.y <Link_Y:
                 if self.direction == 'D':
 
-                    Projectile_List.append(Projectile(weapon, self.x, self.y+self.size/2, 30, 10, self.direction))
-        if abs(Link_Y-self.y) <25:
+                    Projectile_List.append(Projectile(weapon, self.x, self.y+self.size/2, 30, 8, self.direction))
+        if abs(Link_Y-self.y) <10:
             if self.x > Link_X:
                 if self.direction =='L':
 
-                    Projectile_List.append(Projectile(weapon, self.x-self.size/2, self.y, 30, 10, self.direction))
+                    Projectile_List.append(Projectile(weapon, self.x-self.size/2, self.y, 30, 8, self.direction))
             elif self.x < Link_X:
                 if self.direction == 'R':
 
-                    Projectile_List.append(Projectile(weapon, self.x+self.size/2, self.y, 30, 10, self.direction))        
+                    Projectile_List.append(Projectile(weapon, self.x+self.size/2, self.y, 30, 8, self.direction))        
 
     def move(self):
 
