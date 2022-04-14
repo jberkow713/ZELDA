@@ -48,6 +48,7 @@ Object_Count = 0
 Objects = []
 Projectile_Count = 0
 Projectiles = []
+Projectile_List = []
 
 def attack_distance(x,y):
     
@@ -209,10 +210,12 @@ class Link:
             
         location = find_boundaries(x,y,self.size)
 
-        for object in Projectiles:
+        for object in Projectile_List:
             if object.off_map == False:
 
-                Loc = find_boundaries(object[0], object[1], object[2])
+                val = Projectiles[object.Obj_num]               
+                
+                Loc = find_boundaries(val[0], val[1], val[2])
                 if collision(location, Loc)==True:
                     self.health -=1
 
@@ -379,7 +382,8 @@ class Object:
         self.Obj_Collision = False
         self.forced_move = False
         self.forced_direction = None
-        self.forced_counter = 0       
+        self.forced_counter = 0
+              
                                
     
     def obj_num(self):
@@ -488,25 +492,27 @@ class Object:
         # TODO create projectile objects here
         Link_X = Objects[Link_Placement][0]
         Link_Y = Objects[Link_Placement][1]
+        # TODO add distance check between enemy and link, can not have firing too close
 
-        if abs(Link_X-self.x) <1:
+        if abs(Link_X-self.x) <25:
             if self.y > Link_Y:
                 if self.direction == 'U':
                     
-                    P = Projectile(weapon, self.x, self.y-self.size/2, 30, 20, self.direction)
+                    Projectile_List.append(Projectile(weapon, self.x, self.y-self.size/2, 30, 10, self.direction))
+
             elif self.y <Link_Y:
                 if self.direction == 'D':
 
-                    P = Projectile(weapon, self.x, self.y+self.size/2, 30, 20, self.direction)
-        if abs(Link_Y-self.y) <1:
+                    Projectile_List.append(Projectile(weapon, self.x, self.y+self.size/2, 30, 10, self.direction))
+        if abs(Link_Y-self.y) <25:
             if self.x > Link_X:
                 if self.direction =='L':
 
-                    P = Projectile(weapon, self.x-self.size/2, self.y, 30, 20, self.direction)
+                    Projectile_List.append(Projectile(weapon, self.x-self.size/2, self.y, 30, 10, self.direction))
             elif self.x < Link_X:
                 if self.direction == 'R':
 
-                    P = Projectile(weapon, self.x+self.size/2, self.y, 30, 20, self.direction)        
+                    Projectile_List.append(Projectile(weapon, self.x+self.size/2, self.y, 30, 10, self.direction))        
 
     def move(self):
 
@@ -514,7 +520,9 @@ class Object:
         if self.direction == None:            
             self.direction = random_dir
         # TODO
-        # self.create_projectile()
+        random_shot = random.randint(0,100)
+        if random_shot >97:
+            self.create_projectile()
         
         if self.forced_move ==False:
             self.create_attack()
@@ -720,15 +728,23 @@ class Projectile:
     def move(self):
         if self.direction == 'U':
             self.y -=self.speed
+            Projectiles[self.Obj_num] = self.x, self.y, self.size
+            self.rect.center=(self.x, self.y)
             return 
         elif self.direction == 'D':
             self.y +=self.speed
+            Projectiles[self.Obj_num] = self.x, self.y, self.size
+            self.rect.center=(self.x, self.y)
             return 
         elif self.direction == 'R':
             self.x +=self.speed
+            Projectiles[self.Obj_num] = self.x, self.y, self.size
+            self.rect.center=(self.x, self.y)
             return 
         elif self.direction == 'L':
             self.x -=self.speed
+            Projectiles[self.Obj_num] = self.x, self.y, self.size
+            self.rect.center=(self.x, self.y)
             return
     def map_check(self):
         if self.x <0 or self.x >WIDTH or self.y <0 or self.y >HEIGHT:
@@ -757,6 +773,7 @@ while True:
         Objects.clear()
         Object_Count = 0
         Projectiles.clear()
+        Projectile_List.clear()
         Projectile_Count = 0
         Player = Link(link_down,500,500,75,10)
         L = Level(3,4,75,50,3)
@@ -784,8 +801,9 @@ while True:
                 Dead +=1    
         else:
             screen.blit(enemy.image, enemy.rect)
+           
     
-    for P in Projectiles:
+    for P in Projectile_List:
         P.map_check()
         if P.off_map == False:
             P.move()
@@ -793,7 +811,7 @@ while True:
             if P.off_map == False:
                 Projectiles[P.Obj_num] = P.x, P.y, P.size
                 screen.blit(P.image, P.rect) 
-            elif P.off_Map == True:
+            elif P.off_map == True:
                 Projectiles[P.Obj_num] = -100,-100, P.size    
        
 
