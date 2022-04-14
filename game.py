@@ -383,6 +383,8 @@ class Object:
         self.forced_move = False
         self.forced_direction = None
         self.forced_counter = 0
+        self.can_fire = True
+        self.projectile_num = None
               
                                
     
@@ -493,36 +495,59 @@ class Object:
         Link_X = Objects[Link_Placement][0]
         Link_Y = Objects[Link_Placement][1]
         # TODO add distance check between enemy and link, can not have firing too close
-
+        
         if abs(Link_X-self.x) <10:
             if self.y > Link_Y:
                 if self.direction == 'U':
                     
-                    Projectile_List.append(Projectile(weapon, self.x, self.y-self.size/2, 30, 8, self.direction))
+                    p = Projectile(weapon, self.x, self.y-self.size/2, 30, 8, self.direction)
+                    Projectile_List.append(p)
+                    self.projectile_num = p.Obj_num
+                    self.can_fire = False
 
             elif self.y <Link_Y:
                 if self.direction == 'D':
 
-                    Projectile_List.append(Projectile(weapon, self.x, self.y+self.size/2, 30, 8, self.direction))
+                    p =  Projectile(weapon, self.x, self.y+self.size/2, 30, 8, self.direction)   
+                    Projectile_List.append(p)
+                    self.projectile_num = p.Obj_num
+                    self.can_fire = False
+
         if abs(Link_Y-self.y) <10:
             if self.x > Link_X:
                 if self.direction =='L':
 
-                    Projectile_List.append(Projectile(weapon, self.x-self.size/2, self.y, 30, 8, self.direction))
+                    p = Projectile(weapon, self.x-self.size/2, self.y, 30, 8, self.direction)   
+                    Projectile_List.append(p)
+                    self.projectile_num = p.Obj_num
+                    self.can_fire = False
+
             elif self.x < Link_X:
                 if self.direction == 'R':
+                    p = Projectile(weapon, self.x+self.size/2, self.y, 30, 8, self.direction)
+                    Projectile_List.append(p)
+                    self.projectile_num = p.Obj_num
+                    self.can_fire = False
+    
+    def fire_check(self):
+        if Projectile_List[self.projectile_num].off_map == True:
+            self.can_fire = True 
 
-                    Projectile_List.append(Projectile(weapon, self.x+self.size/2, self.y, 30, 8, self.direction))        
 
     def move(self):
 
         random_dir = self.choices[random.randint(0,len(self.choices)-1)]    
         if self.direction == None:            
             self.direction = random_dir
-        # TODO
+        
         random_shot = random.randint(0,100)
-        if random_shot >97:
-            self.create_projectile()
+        if self.projectile_num != None:
+            self.fire_check()
+
+        if self.can_fire ==True:
+            
+            if random_shot >50:
+                self.create_projectile()
         
         if self.forced_move ==False:
             self.create_attack()
