@@ -373,7 +373,7 @@ class Wall:
     '''
     Wall Class
     '''
-    Wall_Depth = 100
+    Wall_Depth = 50
     
     def __init__(self, image, x,y,size):
         self.image = image
@@ -820,7 +820,7 @@ while True:
     if Dead == E:
         print('New Level')
         Level_Reset = True        
-        
+    #Randomized level 
     if Level_Reset == True:
         E = 0
         Objects.clear()
@@ -829,7 +829,9 @@ while True:
         Projectile_List.clear()
         Projectile_Count = 0
         Player = Link(link_down,500,500,75,10)
-        L = Level(10,10,75,50,3)
+        enemies = random.randint(5,10)
+        lands = random.randint(5,10)
+        L = Level(enemies,lands,75,50,3)
         E += L.enemies
         Level_Reset = False               
            
@@ -840,6 +842,7 @@ while True:
     Player.move()   
     
     Dead = 0 
+    # Enemy movement, etc...
     for enemy in L.Object_List:
         if enemy.can_move==True:
             
@@ -853,7 +856,7 @@ while True:
                 Dead +=1    
         else:
             screen.blit(enemy.image, enemy.rect)           
-    
+    # Projectile check
     for P in Projectile_List:
         P.map_check()
         if P.off_map == False:
