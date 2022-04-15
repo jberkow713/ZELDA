@@ -882,17 +882,13 @@ while True:
 
     if Objects[Sword_Placement][0]!=-1000:
         
-        screen.blit(Player.sword.image, Player.sword.rect)    
-    
-
-
+        screen.blit(Player.sword.image, Player.sword.rect)
 
     pygame.display.set_caption("The Legend of Zelda")
     font = pygame.font.SysFont("comicsans", 40, True)    
-    text = font.render(f'Health Remaining: {HEALTH}', 1, BLACK) # Arguments are: text, anti-aliasing, color
+    text = font.render(f'Health Remaining: {HEALTH}', 1, BLACK) 
     text2 = font.render(f'Enemies Defeated: {KILLED + Dead}', 1, BLACK)
     screen.blit(text, (10, 10))
     screen.blit(text2, (500, 10))
-
 
     pygame.display.flip()
