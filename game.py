@@ -24,6 +24,7 @@ PURPLE = (255,0,255)
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("The Legend of Zelda")
+# IMAGES
 
 link_down = pygame.image.load("Link.png").convert_alpha()
 link_up = pygame.image.load("Link_Up_Advanced.jpg").convert_alpha()
@@ -40,7 +41,7 @@ tree = pygame.image.load("TREE_PNG.png").convert_alpha()
 wall = pygame.image.load("Zelda_Wall.jpg").convert_alpha()
 
 weapon = pygame.image.load("Enemy_Weapon.jpg").convert_alpha()
-
+# Global Variables
 Link_Placement = None
 Sword_Placement = None
 Sword_Direction = None
@@ -51,19 +52,25 @@ Projectiles = []
 Projectile_List = []
 
 def attack_distance(x,y):
-    
+    '''
+    Calculates distance between Link and enemies
+    '''    
     Link_X = Objects[Link_Placement][0]
     Link_Y = Objects[Link_Placement][1]
-
     return  math.sqrt(abs(Link_X-x)**2 +abs(Link_Y-y)**2)
 
 def find_boundaries(x,y, size):
+    '''
+    Finds boundaries of objects, to be used in collision detection
+    '''
     x_bounds = int(x -.5*size), int(x + .5*size)
     y_bounds = int(y-.5*size), int(y+.5*size)
-
     return x_bounds, y_bounds
 
 def pushback(x,y, direction, distance):
+    '''
+    Calculates sword attack pushback on enemies
+    '''
     if direction == 'U':
         return x, y-distance
     elif direction =='D':
@@ -74,17 +81,26 @@ def pushback(x,y, direction, distance):
         return x+distance,y
 
 def off_walls(x,y,size):
+    '''
+    Calculates if object is not inside of walls
+    '''
     if x <= WIDTH - .5*size-Wall.Wall_Depth and x>0+.5*size+Wall.Wall_Depth:
         if y >0 + .5*size+ Wall.Wall_Depth and y < HEIGHT- .5*size-Wall.Wall_Depth:
             return True                 
 
 def choose_new_path(LIST, LST2):
+    '''
+    Removes values from one list and randomly generates new value using other list
+    '''
     l = LIST.copy()
     for val in LST2:
         l.remove(val)
     return l[random.randint(0,len(l)-1)]
 
 def collision(a,b):
+    '''
+    Collision detection for objects, Link, projectiles
+    '''
     
     in_between = False
     if a[0][0] >=b[0][0] and a[0][0]<= b[0][1]:
@@ -106,6 +122,9 @@ def collision(a,b):
         if b[1][1] >=a[1][0] and b[1][1] <=a[1][1]:
             return True
 class Sword:
+    '''
+    Sword Class, to be used for Link
+    '''
     SIZE = 75
     def __init__(self,owner):
         self.owner = owner
@@ -158,7 +177,12 @@ class Sword:
             self.y = self.owner.y 
             self.rescale()
             return self.image
+
 class Link:
+    '''
+    Player class
+    '''
+
     def __init__(self, image, x, y, size,speed):
         self.image = image
         self.x = x
@@ -199,8 +223,7 @@ class Link:
     
     def collide(self, x,y):
         '''
-        Discovers collisions, returns True if collision exists
-        Going to compare x y coords and size to all other items in the object list
+        Discovers collisions for Link, returns True if collision exists
         '''
         # This is now a list of all other objects outside of itself
         Other_Objects = Objects.copy()
@@ -226,6 +249,9 @@ class Link:
                 return True              
             
     def move(self):
+        '''
+        Link's movement, pygame player controls
+        '''
         keys = pygame.key.get_pressed()
         
         Objects[self.Obj_num] = (self.x, self.y, self.size, self.can_move)
@@ -237,7 +263,6 @@ class Link:
 
         if keys[pygame.K_UP] and not keys[pygame.K_DOWN] \
             and not keys[pygame.K_RIGHT] and not keys[pygame.K_LEFT]:
-
             curr = self.y - self.speed
             if self.collide(self.x, curr) == True:
                 return      
@@ -249,7 +274,6 @@ class Link:
         
         if keys[pygame.K_DOWN] and not keys[pygame.K_UP]\
             and not keys[pygame.K_RIGHT] and not keys[pygame.K_LEFT]:
-
             curr = self.y + self.speed
             if self.collide(self.x, curr) == True:
                 return      
@@ -261,7 +285,6 @@ class Link:
         
         if keys[pygame.K_RIGHT] and not keys[pygame.K_UP]\
             and not keys[pygame.K_DOWN] and not keys[pygame.K_LEFT]:
-
             curr = self.x + self.speed
             if self.collide(curr, self.y)==True:
                 return
@@ -272,8 +295,7 @@ class Link:
                 self.direction = 'R' 
         
         if keys[pygame.K_LEFT] and not keys[pygame.K_UP]\
-            and not keys[pygame.K_DOWN] and not keys[pygame.K_RIGHT]:
-
+            and not keys[pygame.K_DOWN] and not keys[pygame.K_RIGHT]:            
             curr = self.x - self.speed
             if self.collide(curr,self.y)==True:
                 return
@@ -284,6 +306,9 @@ class Link:
                 self.direction = 'L'          
                  
 class Level:
+    '''
+    Level Creation
+    '''
     
     def __init__(self, enemies, lands,enemy_size, land_size, enemy_speed):
         self.enemies = enemies
@@ -295,9 +320,11 @@ class Level:
         self.Wall_List = []
         self.set_room()            
     
-    def set_room(self):        
-        # Enemies               
-
+    def set_room(self):
+        '''
+        Sets room, enemies, objects, walls
+        '''        
+        # Enemies
         for _ in range(self.enemies):
             Enemy_SIZE = self.enemy_size
             Tree_Size = self.land_size
@@ -343,7 +370,9 @@ class Level:
             self.Wall_List.append(Wall(wall, WIDTH, i*Wall_Size, Wall_Size))
 
 class Wall:
-
+    '''
+    Wall Class
+    '''
     Wall_Depth = 100
     
     def __init__(self, image, x,y,size):
@@ -358,7 +387,10 @@ class Wall:
     def rescale(self):
         self.image = pygame.transform.scale(self.image, (self.size, self.size))
 
-class Object:    
+class Object:
+    '''
+    Static Objects and Enemy Class
+    '''    
     
     def __init__(self, image, x,y, size,speed,can_move=False):
         self.x = x
@@ -384,9 +416,7 @@ class Object:
         self.forced_direction = None
         self.forced_counter = 0
         self.can_fire = True
-        self.projectile_num = None
-              
-                               
+        self.projectile_num = None                              
     
     def obj_num(self):
         global Object_Count
@@ -400,8 +430,7 @@ class Object:
 
     def collide(self, x,y):
         '''
-        Discovers collisions, returns True if collision exists
-        Going to compare x y coords and size to all other items in the object list
+        Discovers collisions for Objects        
         '''
         # This is now a list of all other objects outside of itself
         Other_Objects = Objects.copy()
@@ -416,9 +445,7 @@ class Object:
             self.health -=1            
             return 'Hit'
         # Collision for other objects
-        for object in Other_Objects:
-                        
-            # Other object locations
+        for object in Other_Objects:           
             Loc = find_boundaries(object[0], object[1], object[2])
             if collision(location, Loc)==True:
                 if object[3]==False:
@@ -426,12 +453,14 @@ class Object:
                     return True
 
                 self.Obj_Collision=False
-                return True        
-        
+                return True       
         
         return False   
         
     def choose_dir(self, dirs):
+        '''
+        Helps Objects navigate around static objects when attacking Link
+        '''
         x = Objects[Link_Placement][0]
         y = Objects[Link_Placement][1]
 
@@ -452,6 +481,9 @@ class Object:
                 return 'L'
 
     def create_attack(self):
+        '''
+        Finds direction to attack when attacking Link
+        '''
         
         for Dir in self.choices:
             if Dir == 'U':
@@ -489,17 +521,19 @@ class Object:
         else:
             self.direction = min(self.distance_dict, key=self.distance_dict.get)
             self.attacking = True
-            return             
+            return
+
     def create_projectile(self):
-        # TODO create projectile objects here
+        '''
+        Creates projectiles when shooting at Link
+        '''
         Link_X = Objects[Link_Placement][0]
         Link_Y = Objects[Link_Placement][1]
         # TODO add distance check between enemy and link, can not have firing too close
         
         if abs(Link_X-self.x) <10:
             if self.y > Link_Y:
-                if self.direction == 'U':
-                    
+                if self.direction == 'U':                    
                     p = Projectile(weapon, self.x, self.y-self.size/2, 30, 8, self.direction)
                     Projectile_List.append(p)
                     self.projectile_num = p.Obj_num
@@ -507,7 +541,6 @@ class Object:
 
             elif self.y <Link_Y:
                 if self.direction == 'D':
-
                     p =  Projectile(weapon, self.x, self.y+self.size/2, 30, 8, self.direction)   
                     Projectile_List.append(p)
                     self.projectile_num = p.Obj_num
@@ -516,7 +549,6 @@ class Object:
         if abs(Link_Y-self.y) <10:
             if self.x > Link_X:
                 if self.direction =='L':
-
                     p = Projectile(weapon, self.x-self.size/2, self.y, 30, 8, self.direction)   
                     Projectile_List.append(p)
                     self.projectile_num = p.Obj_num
@@ -530,11 +562,16 @@ class Object:
                     self.can_fire = False
     
     def fire_check(self):
+        '''
+        Ties fired projectile to object attribute, determines if enemy can fire again
+        '''
         if Projectile_List[self.projectile_num].off_map == True:
-            self.can_fire = True 
-
+            self.can_fire = True
 
     def move(self):
+        '''
+        Enemy movement function, attacking, projectile firing, Navigation
+        '''
 
         random_dir = self.choices[random.randint(0,len(self.choices)-1)]    
         if self.direction == None:            
@@ -556,34 +593,27 @@ class Object:
             self.forced_counter +=1
         if self.forced_counter ==45:
             self.forced_move = False
-            self.forced_counter = 0 
-
+            self.forced_counter = 0
             
         Objects[self.Obj_num] = (self.x, self.y, self.size, self.can_move)         
         
         if self.direction=='R':
             curr = self.x + self.speed            
-            C = self.collide(curr+self.speed, self.y)
-            
+            C = self.collide(curr+self.speed, self.y)            
             
             if C == True:
                 if self.forced_move == False:         
                     if self.attacking == True:
                         if self.Obj_Collision == True:
-
-                            self.direction = self.choose_dir('U')
-                            # TODO create function here that evaluates moving both directions, and takes one
-                            # That moves enemy closer to link
+                            self.direction = self.choose_dir('U')                            
                             self.forced_direction = self.direction
                             self.forced_move = True
                         return 
                                         
                 self.direction = random_dir
-                return            
-                                
+                return                                
 
-            elif C == 'Hit':
-                                
+            elif C == 'Hit':                                
                 new_x, new_y =  pushback(curr,self.y, Sword_Direction,100)
                 if self.collide(new_x, new_y) == True:                    
                     return  
@@ -598,13 +628,11 @@ class Object:
             
             if curr <=WIDTH - .5*self.size-Wall.Wall_Depth: 
                 self.x = curr
-                self.rect.center = (self.x, self.y)
-                
+                self.rect.center = (self.x, self.y)                
                 self.direction=='R'
 
             else:
-                self.direction = random_dir
-                
+                self.direction = random_dir                
 
         elif self.direction == 'L':            
             curr = self.x - self.speed            
@@ -614,7 +642,6 @@ class Object:
                 if self.forced_move == False: 
                     if self.attacking == True:
                         if self.Obj_Collision == True:
-
                             self.direction = self.choose_dir('U')
                             self.forced_direction = self.direction
                             self.forced_move = True
@@ -623,8 +650,7 @@ class Object:
                 self.direction = random_dir
                 return     
 
-            elif C == 'Hit':
-                                
+            elif C == 'Hit':                                
                 new_x, new_y =  pushback(curr,self.y, Sword_Direction,100)
                 if self.collide(new_x, new_y) == True:
                     return  
@@ -638,16 +664,14 @@ class Object:
 
             if curr >0+.5*self.size+Wall.Wall_Depth:
                 self.x = curr
-                self.rect.center = (self.x, self.y)
-                
+                self.rect.center = (self.x, self.y)                
                 self.direction = 'L'
                
             else:
                 self.direction = random_dir
                              
                 
-        elif self.direction == 'U':
-            
+        elif self.direction == 'U':            
             curr = self.y - self.speed            
             C = self.collide(self.x, curr-self.speed)
                       
@@ -655,7 +679,6 @@ class Object:
                 if self.forced_move == False:  
                     if self.attacking == True:
                         if self.Obj_Collision == True:
-
                             self.direction = self.choose_dir('R')
                             self.forced_direction = self.direction
                             self.forced_move = True
@@ -679,7 +702,6 @@ class Object:
             if curr >0 + .5*self.size+ Wall.Wall_Depth:           
                 self.y = curr
                 self.rect.center = (self.x, self.y)
-
                 self.direction == 'U'                
                 
             else:
@@ -694,7 +716,6 @@ class Object:
                 if self.forced_move == False:  
                     if self.attacking == True:
                         if self.Obj_Collision == True:
-
                             self.direction = self.choose_dir('R')
                             self.forced_direction = self.direction
                             self.forced_move = True
@@ -718,13 +739,15 @@ class Object:
             if curr < HEIGHT- .5*self.size-Wall.Wall_Depth:
                 self.y = curr
                 self.rect.center = (self.x, self.y)
-
                 self.direction = 'D'
                 
             else:
                 self.direction = random_dir
 
 class Projectile:
+    '''
+    Projectile class
+    '''
     def __init__(self,image, x, y, size, speed, direction):
         self.image = image
         self.x = x
@@ -739,7 +762,6 @@ class Projectile:
         self.off_map = False
     
     def obj_num(self):
-
         global Projectile_Count
         Obj_Num = Projectile_Count
         Projectile_Count +=1
@@ -750,6 +772,9 @@ class Projectile:
         self.image = pygame.transform.scale(self.image, (self.size, self.size))          
 
     def move(self):
+        '''
+        Movement function for projectiles
+        '''
         if self.direction == 'U':
             self.y -=self.speed
             Projectiles[self.Obj_num] = self.x, self.y, self.size
@@ -770,15 +795,19 @@ class Projectile:
             Projectiles[self.Obj_num] = self.x, self.y, self.size
             self.rect.center=(self.x, self.y)
             return
+    
     def map_check(self):
+        '''
+        Checks if projectile is off map
+        '''
         if self.x <0 or self.x >WIDTH or self.y <0 or self.y >HEIGHT:
             self.off_map = True
-        return                
-
-
+        return
 
 Dead = 0
 E = 0
+
+# GAME LOOP
 
 while True:
     clock.tick(FPS)
@@ -800,7 +829,7 @@ while True:
         Projectile_List.clear()
         Projectile_Count = 0
         Player = Link(link_down,500,500,75,10)
-        L = Level(3,4,75,50,3)
+        L = Level(10,10,75,50,3)
         E += L.enemies
         Level_Reset = False               
            
@@ -815,8 +844,7 @@ while True:
         if enemy.can_move==True:
             
             if enemy.health >0:
-                enemy.move()            
-                
+                enemy.move()                
                 screen.blit(enemy.image, enemy.rect)
 
             elif enemy.health <=0:
@@ -824,8 +852,7 @@ while True:
                 enemy.dead = True
                 Dead +=1    
         else:
-            screen.blit(enemy.image, enemy.rect)
-           
+            screen.blit(enemy.image, enemy.rect)           
     
     for P in Projectile_List:
         P.map_check()
@@ -836,9 +863,7 @@ while True:
                 Projectiles[P.Obj_num] = P.x, P.y, P.size
                 screen.blit(P.image, P.rect) 
             elif P.off_map == True:
-                Projectiles[P.Obj_num] = -100,-100, P.size    
-       
-
+                Projectiles[P.Obj_num] = -100,-100, P.size
 
     Player.find_image()
     screen.blit(Player.image, Player.rect)
