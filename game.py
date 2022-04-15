@@ -21,9 +21,9 @@ GREEN = (0,255,0)
 BLUE = (0,0,255)
 PURPLE = (255,0,255)
 
+pygame.init()
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("The Legend of Zelda")
 # IMAGES
 
 link_down = pygame.image.load("Link.png").convert_alpha()
@@ -42,6 +42,8 @@ wall = pygame.image.load("Zelda_Wall.jpg").convert_alpha()
 
 weapon = pygame.image.load("Enemy_Weapon.jpg").convert_alpha()
 # Global Variables
+HEALTH = 100
+KILLED = 0
 Link_Placement = None
 Sword_Placement = None
 Sword_Direction = None
@@ -50,6 +52,9 @@ Objects = []
 Projectile_Count = 0
 Projectiles = []
 Projectile_List = []
+
+def calc_wall_depth():
+    return random.randint(40,100)
 
 def attack_distance(x,y):
     '''
@@ -195,8 +200,7 @@ class Link:
         self.Obj_num = self.obj_num()
         self.rect = self.image.get_rect()
         self.rect.center = (self.x, self.y)
-        self.sword = Sword(self)
-        self.health = 10
+        self.sword = Sword(self)        
 
     def obj_num(self):
         global Object_Count
@@ -240,7 +244,8 @@ class Link:
                 
                 Loc = find_boundaries(val[0], val[1], val[2])
                 if collision(location, Loc)==True:
-                    self.health -=1
+                    global HEALTH
+                    HEALTH -=1 
 
         for object in Other_Objects:
             # Other object locations
@@ -373,7 +378,7 @@ class Wall:
     '''
     Wall Class
     '''
-    Wall_Depth = 50
+    Wall_Depth = None
     
     def __init__(self, image, x,y,size):
         self.image = image
@@ -823,11 +828,13 @@ while True:
     #Randomized level 
     if Level_Reset == True:
         E = 0
+        KILLED +=Dead
         Objects.clear()
         Object_Count = 0
         Projectiles.clear()
         Projectile_List.clear()
         Projectile_Count = 0
+        Wall.Wall_Depth = calc_wall_depth()
         Player = Link(link_down,500,500,75,10)
         enemies = random.randint(5,10)
         lands = random.randint(5,10)
@@ -841,7 +848,8 @@ while True:
     Objects[Sword_Placement] = (-1000,-1000,Sword.SIZE) 
     Player.move()   
     
-    Dead = 0 
+    Dead = 0
+    
     # Enemy movement, etc...
     for enemy in L.Object_List:
         if enemy.can_move==True:
@@ -853,7 +861,8 @@ while True:
             elif enemy.health <=0:
                 Objects[enemy.Obj_num]= (-1000,-1000,0)
                 enemy.dead = True
-                Dead +=1    
+                Dead +=1
+                             
         else:
             screen.blit(enemy.image, enemy.rect)           
     # Projectile check
@@ -874,5 +883,16 @@ while True:
     if Objects[Sword_Placement][0]!=-1000:
         
         screen.blit(Player.sword.image, Player.sword.rect)    
-        
+    
+
+
+
+    pygame.display.set_caption("The Legend of Zelda")
+    font = pygame.font.SysFont("comicsans", 40, True)    
+    text = font.render(f'Health Remaining: {HEALTH}', 1, BLACK) # Arguments are: text, anti-aliasing, color
+    text2 = font.render(f'Enemies Defeated: {KILLED + Dead}', 1, BLACK)
+    screen.blit(text, (10, 10))
+    screen.blit(text2, (500, 10))
+
+
     pygame.display.flip()
