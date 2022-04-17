@@ -912,9 +912,12 @@ while True:
 
             elif enemy.health <=0:
                 if Objects[enemy.Obj_num][0]!=-1000:
-                    item = Object(heart, enemy.x, enemy.y, 30, 0, False,True)
+                    
+                    if random.randint(0,50)>15:
 
-                    L.Object_List.append(item)
+                        item = Object(heart, enemy.x, enemy.y, 30, 0, False,True)
+
+                        L.Object_List.append(item)
                     # Objects[self.Obj_num] = (self.x, self.y, self.size, self.can_move, self.item)   
 
                     Objects[enemy.Obj_num]= (-1000,-1000,0, True, False)
