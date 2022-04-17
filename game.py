@@ -260,8 +260,7 @@ class Link:
                     val_3 = Objects[position][3]
                     val_4 = Objects[position][4]
 
-                    Objects[position]= (val_0,val_1,val_2,val_3, val_4)
-                    
+                    Objects[position]= (val_0,val_1,val_2,val_3, val_4)                    
                     global HEALTH
                     HEALTH +=10
                     return 
@@ -491,6 +490,7 @@ class Object:
             return 'Hit'
         # Collision for other objects
         for object in Other_Objects:
+            # So moving enemies do not get blocked by items which are droppped
             if len(object)==5:
                 if object[4]==False:                        
 
@@ -911,14 +911,13 @@ while True:
                 screen.blit(enemy.image, enemy.rect)
 
             elif enemy.health <=0:
+                # TODO create randomized item_drop function for global
                 if Objects[enemy.Obj_num][0]!=-1000:
                     
                     if random.randint(0,50)>15:
 
                         item = Object(heart, enemy.x, enemy.y, 30, 0, False,True)
-
-                        L.Object_List.append(item)
-                    # Objects[self.Obj_num] = (self.x, self.y, self.size, self.can_move, self.item)   
+                        L.Object_List.append(item)                      
 
                     Objects[enemy.Obj_num]= (-1000,-1000,0, True, False)
                 
