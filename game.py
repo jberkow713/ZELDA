@@ -252,7 +252,6 @@ class Link:
             if object[4]==True:
                 Loc = find_boundaries(object[0], object[1], object[2])
                 if collision(location, Loc)==True:
-                    # print(object, object.Obj_num)
                     # object -2 change its x coords to -1000
                     val_0 = -1000
                     val_1 = Objects[position][1]
@@ -308,6 +307,7 @@ class Link:
                 self.y = curr
                 self.rect.center = (self.x, self.y)
                 self.direction = 'U'
+                return 
         
         if keys[pygame.K_DOWN] and not keys[pygame.K_UP]\
             and not keys[pygame.K_RIGHT] and not keys[pygame.K_LEFT]:
@@ -320,6 +320,7 @@ class Link:
                 self.y = curr
                 self.rect.center = (self.x, self.y)
                 self.direction = 'D'
+                return 
         
         if keys[pygame.K_RIGHT] and not keys[pygame.K_UP]\
             and not keys[pygame.K_DOWN] and not keys[pygame.K_LEFT]:
@@ -331,7 +332,8 @@ class Link:
             if curr <WIDTH - .5*self.size -Wall.Wall_Depth:
                 self.x = curr
                 self.rect.center = (self.x, self.y)
-                self.direction = 'R' 
+                self.direction = 'R'
+                return 
         
         if keys[pygame.K_LEFT] and not keys[pygame.K_UP]\
             and not keys[pygame.K_DOWN] and not keys[pygame.K_RIGHT]:
@@ -343,7 +345,8 @@ class Link:
             if curr >0 + .5*self.size +Wall.Wall_Depth:
                 self.x = curr
                 self.rect.center = (self.x, self.y)
-                self.direction = 'L'          
+                self.direction = 'L'
+                return          
                  
 class Level:
     '''
@@ -490,7 +493,7 @@ class Object:
             return 'Hit'
         # Collision for other objects
         for object in Other_Objects:
-            # So moving enemies do not get blocked by items which are droppped
+            # collisions with enemies and non item objects
             if len(object)==5:
                 if object[4]==False:                        
 
@@ -502,6 +505,7 @@ class Object:
 
                         self.Obj_Collision=False
                         return True       
+            # Collision with Link and Link's Sword
             else:
                 Loc = find_boundaries(object[0], object[1], object[2])
                 if collision(location, Loc)==True:
@@ -586,8 +590,7 @@ class Object:
         '''
         Link_X = Objects[Link_Placement][0]
         Link_Y = Objects[Link_Placement][1]
-        # TODO add distance check between enemy and link, can not have firing too close
-        
+                
         if abs(Link_X-self.x) <10:
             if self.y > Link_Y:
                 if self.direction == 'U':                    
@@ -595,6 +598,7 @@ class Object:
                     Projectile_List.append(p)
                     self.projectile_num = p.Obj_num
                     self.can_fire = False
+                    return 
 
             elif self.y <Link_Y:
                 if self.direction == 'D':
@@ -602,6 +606,7 @@ class Object:
                     Projectile_List.append(p)
                     self.projectile_num = p.Obj_num
                     self.can_fire = False
+                    return 
 
         if abs(Link_Y-self.y) <10:
             if self.x > Link_X:
@@ -610,6 +615,7 @@ class Object:
                     Projectile_List.append(p)
                     self.projectile_num = p.Obj_num
                     self.can_fire = False
+                    return 
 
             elif self.x < Link_X:
                 if self.direction == 'R':
@@ -617,6 +623,7 @@ class Object:
                     Projectile_List.append(p)
                     self.projectile_num = p.Obj_num
                     self.can_fire = False
+                    return
     
     def fire_check(self):
         '''
@@ -624,6 +631,7 @@ class Object:
         '''
         if Projectile_List[self.projectile_num].off_map == True:
             self.can_fire = True
+            return
 
     def move(self):
         '''
