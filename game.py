@@ -224,7 +224,21 @@ class Link:
         
     def rescale(self):
         self.image = pygame.transform.scale(self.image, (self.size, self.size))
-    
+    def projectile_collide(self):
+        
+        location = find_boundaries(self.x,self.y,self.size)
+        
+        for object in Projectile_List:
+            if object.off_map == False:
+
+                val = Projectiles[object.Obj_num]               
+                
+                Loc = find_boundaries(val[0], val[1], val[2])
+                if collision(location, Loc)==True:
+                    global HEALTH
+                    HEALTH -=1
+        return             
+
     def collide(self, x,y):
         '''
         Discovers collisions for Link, returns True if collision exists
@@ -236,17 +250,7 @@ class Link:
         Other_Objects.remove(Other_Objects[0])            
             
         location = find_boundaries(x,y,self.size)
-
-        for object in Projectile_List:
-            if object.off_map == False:
-
-                val = Projectiles[object.Obj_num]               
-                
-                Loc = find_boundaries(val[0], val[1], val[2])
-                if collision(location, Loc)==True:
-                    global HEALTH
-                    HEALTH -=1 
-
+        
         for object in Other_Objects:
             # Other object locations
             Loc = find_boundaries(object[0], object[1], object[2])
@@ -260,7 +264,8 @@ class Link:
         keys = pygame.key.get_pressed()
         
         Objects[self.Obj_num] = (self.x, self.y, self.size, self.can_move)
-
+        self.projectile_collide()
+        
         if keys[pygame.K_RETURN]:
             self.sword.load_sword()
             Objects[Sword_Placement] = (self.sword.x, self.sword.y, self.sword.size)
@@ -890,5 +895,6 @@ while True:
     text2 = font.render(f'Enemies Defeated: {KILLED + Dead}', 1, BLACK)
     screen.blit(text, (10, 10))
     screen.blit(text2, (500, 10))
-
+    if HEALTH <=0:
+        sys.exit() 
     pygame.display.flip()
