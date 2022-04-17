@@ -39,10 +39,11 @@ sword_right = pygame.image.load("Link_Sword_Right.png").convert_alpha()
 ghost = pygame.image.load("ghost.png").convert_alpha()
 tree = pygame.image.load("TREE_PNG.png").convert_alpha()
 wall = pygame.image.load("Zelda_Wall.jpg").convert_alpha()
+heart = pygame.image.load("Heart.png").convert_alpha()
 
 weapon = pygame.image.load("Enemy_Weapon.jpg").convert_alpha()
 # Global Variables
-HEALTH = 100
+HEALTH = 200
 KILLED = 0
 Link_Placement = None
 Sword_Placement = None
@@ -238,7 +239,33 @@ class Link:
                     global HEALTH
                     HEALTH -=1
         return             
+    def item_collide(self, x, y):
+        Other_Objects = Objects.copy()
+        # Removing Link and Sword from Object list to avoid colliding with self
+        for _ in range(2):
+            Other_Objects.remove(Other_Objects[0])
+        
+        location = find_boundaries(x,y,self.size)
+        position = 2
+        for object in Other_Objects:
+                        
+            if object[4]==True:
+                Loc = find_boundaries(object[0], object[1], object[2])
+                if collision(location, Loc)==True:
+                    # print(object, object.Obj_num)
+                    # object -2 change its x coords to -1000
+                    val_0 = -1000
+                    val_1 = Objects[position][1]
+                    val_2 = Objects[position][2]
+                    val_3 = Objects[position][3]
+                    val_4 = Objects[position][4]
 
+                    Objects[position]= (val_0,val_1,val_2,val_3, val_4)
+                    
+                    global HEALTH
+                    HEALTH +=10
+                    return 
+            position +=1
     def collide(self, x,y):
         '''
         Discovers collisions for Link, returns True if collision exists
@@ -246,9 +273,9 @@ class Link:
         # This is now a list of all other objects outside of itself
         Other_Objects = Objects.copy()
         # Removing Link and Sword from Object list to avoid colliding with self
-        Other_Objects.remove(Other_Objects[0])
-        Other_Objects.remove(Other_Objects[0])            
-            
+        for _ in range(2):
+            Other_Objects.remove(Other_Objects[0])
+                    
         location = find_boundaries(x,y,self.size)
         
         for object in Other_Objects:
@@ -274,6 +301,7 @@ class Link:
         if keys[pygame.K_UP] and not keys[pygame.K_DOWN] \
             and not keys[pygame.K_RIGHT] and not keys[pygame.K_LEFT]:
             curr = self.y - self.speed
+            self.item_collide(self.x, curr)
             if self.collide(self.x, curr) == True:
                 return      
 
@@ -285,6 +313,7 @@ class Link:
         if keys[pygame.K_DOWN] and not keys[pygame.K_UP]\
             and not keys[pygame.K_RIGHT] and not keys[pygame.K_LEFT]:
             curr = self.y + self.speed
+            self.item_collide(self.x, curr)
             if self.collide(self.x, curr) == True:
                 return      
 
@@ -296,6 +325,7 @@ class Link:
         if keys[pygame.K_RIGHT] and not keys[pygame.K_UP]\
             and not keys[pygame.K_DOWN] and not keys[pygame.K_LEFT]:
             curr = self.x + self.speed
+            self.item_collide(curr, self.y)
             if self.collide(curr, self.y)==True:
                 return
 
@@ -305,8 +335,9 @@ class Link:
                 self.direction = 'R' 
         
         if keys[pygame.K_LEFT] and not keys[pygame.K_UP]\
-            and not keys[pygame.K_DOWN] and not keys[pygame.K_RIGHT]:            
+            and not keys[pygame.K_DOWN] and not keys[pygame.K_RIGHT]:
             curr = self.x - self.speed
+            self.item_collide(curr,self.y)
             if self.collide(curr,self.y)==True:
                 return
 
@@ -402,7 +433,7 @@ class Object:
     Static Objects and Enemy Class
     '''    
     
-    def __init__(self, image, x,y, size,speed,can_move=False):
+    def __init__(self, image, x,y, size,speed,can_move=False, item=False):
         self.x = x
         self.y = y
         self.size = size
@@ -411,6 +442,7 @@ class Object:
         self.image = image
         self.rescale()
         self.can_move = can_move
+        self.item = item
         self.rect = self.image.get_rect()
         self.rect.center = (self.x, self.y)
         self.direction = None
@@ -432,11 +464,14 @@ class Object:
         global Object_Count
         Obj_Num = Object_Count
         Object_Count +=1
-        Objects.append((self.x,self.y, self.size, self.can_move))
+        Objects.append((self.x,self.y, self.size, self.can_move, self.item))
         return Obj_Num        
 
     def rescale(self):
         self.image = pygame.transform.scale(self.image, (self.size, self.size))           
+    
+    def set_rect(self):
+        self.rect.center = (self.x, self.y)
 
     def collide(self, x,y):
         '''
@@ -455,16 +490,28 @@ class Object:
             self.health -=1            
             return 'Hit'
         # Collision for other objects
-        for object in Other_Objects:           
-            Loc = find_boundaries(object[0], object[1], object[2])
-            if collision(location, Loc)==True:
-                if object[3]==False:
-                    self.Obj_Collision = True
-                    return True
+        for object in Other_Objects:
+            if len(object)==5:
+                if object[4]==False:                        
 
-                self.Obj_Collision=False
-                return True       
-        
+                    Loc = find_boundaries(object[0], object[1], object[2])
+                    if collision(location, Loc)==True:
+                        if object[3]==False:
+                            self.Obj_Collision = True
+                            return True
+
+                        self.Obj_Collision=False
+                        return True       
+            else:
+                Loc = find_boundaries(object[0], object[1], object[2])
+                if collision(location, Loc)==True:
+                    if object[3]==False:
+                        self.Obj_Collision = True
+                        return True
+
+                    self.Obj_Collision=False
+                    return True    
+
         return False   
         
     def choose_dir(self, dirs):
@@ -605,7 +652,7 @@ class Object:
             self.forced_move = False
             self.forced_counter = 0
             
-        Objects[self.Obj_num] = (self.x, self.y, self.size, self.can_move)         
+        Objects[self.Obj_num] = (self.x, self.y, self.size, self.can_move, self.item)         
         
         if self.direction=='R':
             curr = self.x + self.speed            
@@ -864,11 +911,20 @@ while True:
                 screen.blit(enemy.image, enemy.rect)
 
             elif enemy.health <=0:
-                Objects[enemy.Obj_num]= (-1000,-1000,0)
+                if Objects[enemy.Obj_num][0]!=-1000:
+                    item = Object(heart, enemy.x, enemy.y, 30, 0, False,True)
+
+                    L.Object_List.append(item)
+                    # Objects[self.Obj_num] = (self.x, self.y, self.size, self.can_move, self.item)   
+
+                    Objects[enemy.Obj_num]= (-1000,-1000,0, True, False)
+                
                 enemy.dead = True
                 Dead +=1
-                             
-        else:
+                                 
+        elif enemy.can_move==False:
+            enemy.x = Objects[enemy.Obj_num][0]
+            enemy.set_rect()
             screen.blit(enemy.image, enemy.rect)           
     # Projectile check
     for P in Projectile_List:
