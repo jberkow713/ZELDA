@@ -43,7 +43,7 @@ heart = pygame.image.load("Heart.png").convert_alpha()
 
 weapon = pygame.image.load("Enemy_Weapon.jpg").convert_alpha()
 # Global Variables
-HEALTH = 200
+HEALTH = 1000
 KILLED = 0
 Link_Placement = None
 Sword_Placement = None
@@ -460,7 +460,11 @@ class Object:
         self.forced_direction = None
         self.forced_counter = 0
         self.can_fire = True
-        self.projectile_num = None                              
+        self.projectile_num = None
+        self.stuck = False
+        self.movement_list = []
+        self.stuck_counter = 0
+                                   
     
     def obj_num(self):
         global Object_Count
@@ -518,29 +522,33 @@ class Object:
 
         return False   
         
-    def choose_dir(self, dirs):
+    def choose_dir(self, dir, x,y):
         '''
         Helps Objects navigate around static objects when attacking Link
         '''
         x = Objects[Link_Placement][0]
         y = Objects[Link_Placement][1]
+        #x and y are the x and y coordinates of object as it hits other object
+        # need to test direction, and decide 
 
-        if dirs == 'U':
+        if dir == 'U':
             Down = abs((self.y +1)-y) 
             Up = abs((self.y -1) - y)
             if Down < Up:
-                return 'D'
-            else:
+                return 'D'                
+            elif Up<Down:
                 return 'U'
+                
 
-        if dirs == 'R':
+        if dir == 'R':
             Right = abs((self.x +1)-x) 
             Left = abs((self.x -1) - x)
             if Right < Left:
                 return 'R'
-            else:
+            elif Left<Right:
                 return 'L'
-
+                 
+                
     def create_attack(self):
         '''
         Finds direction to attack when attacking Link
@@ -632,11 +640,28 @@ class Object:
         if Projectile_List[self.projectile_num].off_map == True:
             self.can_fire = True
             return
+    
+    def stuck_check(self):
+        random_dir = self.choices[random.randint(0,len(self.choices)-1)]  
+
+        if len(self.movement_list)>1:
+            if self.movement_list[-2][0]==self.movement_list[-1][0]:
+                if self.movement_list[-2][1]==self.movement_list[-1][1]:
+                    self.movement_list.clear()
+                    self.stuck = True
+                    self.direction = random_dir
+                    return 
+            else:
+                self.movement_list.clear()
+                self.stuck = False
+                return                   
+        return           
 
     def move(self):
         '''
         Enemy movement function, attacking, projectile firing, Navigation
         '''
+        self.stuck_check()
 
         random_dir = self.choices[random.randint(0,len(self.choices)-1)]    
         if self.direction == None:            
@@ -648,10 +673,18 @@ class Object:
         if self.can_fire ==True:
             random_shot = random.randint(0,100)            
             if random_shot >50:
-                self.create_projectile()
+                self.create_projectile()        
         
+        if self.stuck ==True:
+            self.forced_move = False
+            self.stuck_counter +=1
+            if self.stuck_counter ==100:
+                self.stuck_counter = 0
+                self.stuck = False
+
         if self.forced_move ==False:
-            self.create_attack()
+            if self.stuck == False:
+                self.create_attack()
         
         if self.forced_move == True:
             self.direction = self.forced_direction
@@ -659,6 +692,7 @@ class Object:
         if self.forced_counter ==45:
             self.forced_move = False
             self.forced_counter = 0
+            
             
         Objects[self.Obj_num] = (self.x, self.y, self.size, self.can_move, self.item)         
         
@@ -670,9 +704,10 @@ class Object:
                 if self.forced_move == False:         
                     if self.attacking == True:
                         if self.Obj_Collision == True:
-                            self.direction = self.choose_dir('U')                            
+                            self.direction = self.choose_dir('U', curr, self.y)                            
                             self.forced_direction = self.direction
                             self.forced_move = True
+                            self.movement_list.append((self.x, self.y))
                         return 
                                         
                 self.direction = random_dir
@@ -707,9 +742,10 @@ class Object:
                 if self.forced_move == False: 
                     if self.attacking == True:
                         if self.Obj_Collision == True:
-                            self.direction = self.choose_dir('U')
+                            self.direction = self.choose_dir('U', curr, self.y)
                             self.forced_direction = self.direction
                             self.forced_move = True
+                            self.movement_list.append((self.x, self.y))
                             return 
                                                 
                 self.direction = random_dir
@@ -744,9 +780,10 @@ class Object:
                 if self.forced_move == False:  
                     if self.attacking == True:
                         if self.Obj_Collision == True:
-                            self.direction = self.choose_dir('R')
+                            self.direction = self.choose_dir('R', self.x, curr)
                             self.forced_direction = self.direction
                             self.forced_move = True
+                            self.movement_list.append((self.x, self.y))
                             return                               
                 
                 self.direction = random_dir
@@ -781,9 +818,10 @@ class Object:
                 if self.forced_move == False:  
                     if self.attacking == True:
                         if self.Obj_Collision == True:
-                            self.direction = self.choose_dir('R')
+                            self.direction = self.choose_dir('R', self.x, curr)
                             self.forced_direction = self.direction
                             self.forced_move = True
+                            self.movement_list.append((self.x, self.y))
                             return                   
             
                 self.direction = random_dir
@@ -918,6 +956,8 @@ while True:
                 enemy.move()                
                 screen.blit(enemy.image, enemy.rect)
 
+            if enemy.dead ==True:
+                Dead+=1
             elif enemy.health <=0:
                 # TODO create randomized item_drop function for global
                 if Objects[enemy.Obj_num][0]!=-1000:
