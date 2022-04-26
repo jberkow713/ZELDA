@@ -464,6 +464,7 @@ class Object:
         self.stuck = False
         self.movement_list = []
         self.stuck_counter = 0
+        self.unstuck_timer = 0
                                            
     
     def obj_num(self):
@@ -537,8 +538,7 @@ class Object:
             if Down < Up:
                 return 'D'                
             elif Up<Down:
-                return 'U'
-                
+                return 'U'                
 
         if dir == 'R':
             Right = abs((self.x +1)-x) 
@@ -546,8 +546,7 @@ class Object:
             if Right < Left:
                 return 'R'
             elif Left<Right:
-                return 'L'
-                 
+                return 'L'                 
                 
     def create_attack(self):
         '''
@@ -682,12 +681,17 @@ class Object:
             if self.stuck_counter ==100:
                 self.stuck_counter = 0
                 self.stuck = False
-                self.attack_distance = 400
+                
 
         if self.forced_move ==False:
             if self.stuck == False:
+                if self.attack_distance == 300:
+                    self.unstuck_timer +=1
+                    if self.unstuck_timer ==50:
+                        self.unstuck_timer = 0
+                        self.attack_distance = 400        
                 self.create_attack()
-        
+                
         if self.forced_move == True:
             self.direction = self.forced_direction
             self.forced_counter +=1
