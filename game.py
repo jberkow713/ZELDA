@@ -459,7 +459,6 @@ class Object:
         self.forced_move = False
         self.forced_direction = None
         self.forced_counter = 0
-        self.can_fire = True
         self.projectile_num = None
         self.stuck = False
         self.movement_list = []
@@ -604,7 +603,6 @@ class Object:
                     p = Projectile(weapon, self.x, self.y-self.size/2, 30, 8, self.direction)
                     Projectile_List.append(p)
                     self.projectile_num = p.Obj_num
-                    self.can_fire = False
                     return 
 
             elif self.y <Link_Y:
@@ -612,7 +610,6 @@ class Object:
                     p =  Projectile(weapon, self.x, self.y+self.size/2, 30, 8, self.direction)   
                     Projectile_List.append(p)
                     self.projectile_num = p.Obj_num
-                    self.can_fire = False
                     return 
 
         if abs(Link_Y-self.y) <10:
@@ -621,7 +618,6 @@ class Object:
                     p = Projectile(weapon, self.x-self.size/2, self.y, 30, 8, self.direction)   
                     Projectile_List.append(p)
                     self.projectile_num = p.Obj_num
-                    self.can_fire = False
                     return 
 
             elif self.x < Link_X:
@@ -629,7 +625,6 @@ class Object:
                     p = Projectile(weapon, self.x+self.size/2, self.y, 30, 8, self.direction)
                     Projectile_List.append(p)
                     self.projectile_num = p.Obj_num
-                    self.can_fire = False
                     return
     
     def fire_check(self):
@@ -637,8 +632,7 @@ class Object:
         Ties fired projectile to object attribute, determines if enemy can fire again
         '''
         if Projectile_List[self.projectile_num].off_map == True:
-            self.can_fire = True
-            return
+            return True
     
     def stuck_check(self):
         random_dir = self.choices[random.randint(0,len(self.choices)-1)]  
@@ -667,13 +661,13 @@ class Object:
         if self.direction == None:            
             self.direction = random_dir        
         
-        if self.projectile_num != None:
-            self.fire_check()
-
-        if self.can_fire ==True:
-            random_shot = random.randint(0,100)            
-            if random_shot >50:
-                self.create_projectile()        
+        if self.projectile_num==None:
+            self.create_projectile()
+        if self.projectile_num !=None:
+            if self.fire_check()==True:        
+                random_shot = random.randint(0,100)            
+                if random_shot >50:
+                    self.create_projectile()        
         
         if self.stuck ==True:
             self.forced_move = False
