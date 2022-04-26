@@ -611,7 +611,7 @@ class Object:
                     Projectile_List.append(p)
                     self.projectile_num = p.Obj_num
                     return 
-
+        
         if abs(Link_Y-self.y) <10:
             if self.x > Link_X:
                 if self.direction =='L':
@@ -626,13 +626,17 @@ class Object:
                     Projectile_List.append(p)
                     self.projectile_num = p.Obj_num
                     return
-    
+        return
+         
     def fire_check(self):
         '''
         Ties fired projectile to object attribute, determines if enemy can fire again
         '''
         if Projectile_List[self.projectile_num].off_map == True:
-            return True
+            random_shot = random.randint(0,100)            
+            if random_shot >50:
+                self.create_projectile()    
+        return         
     
     def stuck_check(self):
         random_dir = self.choices[random.randint(0,len(self.choices)-1)]  
@@ -664,10 +668,8 @@ class Object:
         if self.projectile_num==None:
             self.create_projectile()
         if self.projectile_num !=None:
-            if self.fire_check()==True:        
-                random_shot = random.randint(0,100)            
-                if random_shot >50:
-                    self.create_projectile()        
+            self.fire_check() 
+                 
         
         if self.stuck ==True:
             self.forced_move = False
