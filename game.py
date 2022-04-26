@@ -464,7 +464,7 @@ class Object:
         self.stuck = False
         self.movement_list = []
         self.stuck_counter = 0
-                                   
+                                           
     
     def obj_num(self):
         global Object_Count
@@ -650,6 +650,7 @@ class Object:
                     self.movement_list.clear()
                     self.stuck = True
                     self.direction = random_dir
+                    self.attack_distance = 300
                     return 
             else:
                 self.movement_list.clear()
@@ -681,6 +682,7 @@ class Object:
             if self.stuck_counter ==100:
                 self.stuck_counter = 0
                 self.stuck = False
+                self.attack_distance = 400
 
         if self.forced_move ==False:
             if self.stuck == False:
