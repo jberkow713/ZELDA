@@ -627,7 +627,7 @@ class Object:
                     self.projectile_num = p.Obj_num
                     return
         return
-         
+
     def fire_check(self):
         '''
         Ties fired projectile to object attribute, determines if enemy can fire again
@@ -668,16 +668,14 @@ class Object:
         if self.projectile_num==None:
             self.create_projectile()
         if self.projectile_num !=None:
-            self.fire_check() 
-                 
+            self.fire_check()                 
         
         if self.stuck ==True:
             self.forced_move = False
             self.stuck_counter +=1
             if self.stuck_counter ==100:
                 self.stuck_counter = 0
-                self.stuck = False
-                
+                self.stuck = False                
 
         if self.forced_move ==False:
             if self.stuck == False:
@@ -693,8 +691,7 @@ class Object:
             self.forced_counter +=1
         if self.forced_counter ==45:
             self.forced_move = False
-            self.forced_counter = 0
-            
+            self.forced_counter = 0            
             
         Objects[self.Obj_num] = (self.x, self.y, self.size, self.can_move, self.item)         
         
