@@ -3,6 +3,7 @@ import random
 from sys import exit
 from pygame.locals import  *
 import copy
+import math 
 pygame.init()
 
 WIDTH=1400
@@ -29,6 +30,8 @@ tree = pygame.image.load("TREE_PNG.png").convert_alpha()
 wall = pygame.image.load("Zelda_Wall.jpg").convert_alpha()
 heart = pygame.image.load("Heart.png").convert_alpha()
 weapon = pygame.image.load("Enemy_Weapon.jpg").convert_alpha()
+
+Enemies = pygame.sprite.Group()
 
 class Sword:
     def __init__(self,x,y,image):
@@ -118,35 +121,88 @@ class Enemy(pygame.sprite.Sprite):
         self.image = image
         self.rescale()
         self.rect = self.image.get_rect(bottomleft=(self.x,self.y))
+        Enemies.add(self)
+        self.dir = None
+        self.dirs = ["n","s","e","w"] 
     def blit(self):
         screen.blit(self.image,self.rect)
     def rescale(self):
         self.image = pygame.transform.scale(self.image, (self.size,self.size))
-    def update(self):
+    def find_player(self):
         x_dis = self.rect.x - self.player.rect.x 
         y_dis = self.rect.y - self.player.rect.y
-        if x_dis >0:
-            self.rect.x -= self.speed 
-        if x_dis<0:
-            self.rect.x +=self.speed 
-        if y_dis>0:
-            self.rect.y -=self.speed 
-        if y_dis<0:
-            self.rect.y +=self.speed            
+        if math.sqrt(x_dis**2 + y_dis**2)<=WIDTH/4:
+            if x_dis >0:
+                self.rect.x -= self.speed
+                self.dir = None  
+            if x_dis<0:
+                self.rect.x +=self.speed
+                self.dir = None  
+            if y_dis>0:
+                self.rect.y -=self.speed
+                self.dir = None  
+            if y_dis<0:
+                self.rect.y +=self.speed
+                self.dir = None
 
+        else:
+            if self.dir == None:
+                self.dir = random.choice(self.dirs)            
+        return self.dir    
+
+    def update(self):
+        self.find_player() 
+        if self.dir!=None:
+            if self.dir == 'n':
+                if self.rect.y - self.speed - self.size >0:
+                    self.rect.y -=self.speed
+                else:
+                    self.dir = 's'    
+                
+            elif self.dir == 's':
+                if self.rect.y + self.speed+self.size < HEIGHT:
+                    self.rect.y +=self.speed         
+                else:
+                    self.dir ='n'
+                
+            elif self.dir == "e":
+                if self.rect.x + self.speed + self.size <WIDTH:
+                    self.rect.x +=self.speed
+                else:
+                    self.dir ='w'
+                
+            elif self.dir == "w":
+                if self.rect.x - self.speed >0:
+
+                    self.rect.x -=self.speed
+                else:
+                    self.dir = 'e'
+                
+            return
         
+        
+
+
+                        
 
 class Game:
     def __init__(self):
         self.player_sprite = Player(WIDTH/2, HEIGHT/2)
         self.player = pygame.sprite.GroupSingle(self.player_sprite)
-        self.enemy_sprite = Enemy(self.player_sprite,200,200,3, ghost,75)
-        self.enemy = pygame.sprite.GroupSingle(self.enemy_sprite)
+        self.enemies = Enemies
+        self.build_enemies()
+
+    def build_enemies(self):
+        for _ in range(10):
+            x = random.randint(100,WIDTH-100)
+            y = random.randint(100,HEIGHT-100)            
+            Enemy(self.player_sprite,x,y,1, ghost,75)
+
     def run(self):
         self.player_sprite.update()
-        self.enemy_sprite.update()
-        self.enemy_sprite.blit()
-
+        for enemy in self.enemies:
+            enemy.update()
+            enemy.blit()
 g = Game()
 while True:
     for event in pygame.event.get():
