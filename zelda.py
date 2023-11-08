@@ -19,18 +19,15 @@ link_down = pygame.image.load("Link.png").convert_alpha()
 link_up = pygame.image.load("Link_Up_Advanced.jpg").convert_alpha()
 link_left = pygame.image.load("Link_Left_advanced.png").convert_alpha()
 link_right = pygame.image.load("Link_Right_Advanced.png").convert_alpha()
-
 sword_down = pygame.image.load("Link_Sword_Down.png").convert_alpha()
 sword_up = pygame.image.load("Link_Sword_Up.jpg").convert_alpha()
 sword_left = pygame.image.load("Link_Sword_Left.jpg").convert_alpha()
 sword_right = pygame.image.load("Link_Sword_Right.png").convert_alpha()
-
 ghost = pygame.image.load("ghost.png").convert_alpha()
 tree = pygame.image.load("TREE_PNG.png").convert_alpha()
 wall = pygame.image.load("Zelda_Wall.jpg").convert_alpha()
 heart = pygame.image.load("Heart.png").convert_alpha()
 weapon = pygame.image.load("Enemy_Weapon.jpg").convert_alpha()
-
 Enemies = pygame.sprite.Group()
 
 class Sword:
@@ -83,8 +80,7 @@ class Player(pygame.sprite.Sprite):
                 self.image = link_right
                 self.rescale()
                 self.rect.x +=self.speed
-                self.dir = 'r'
-                
+                self.dir = 'r'                
         if keys[pygame.K_LEFT]:
             if self.rect.x - self.speed >0:
                 self.image = link_left
@@ -111,7 +107,7 @@ class Player(pygame.sprite.Sprite):
         self.blit()
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, player,x, y, speed,image,size):
+    def __init__(self, player,x, y, speed,radius,image,size):
         super().__init__()
         self.player = player 
         self.x = x
@@ -119,6 +115,7 @@ class Enemy(pygame.sprite.Sprite):
         self.speed = speed
         self.size = size
         self.image = image
+        self.radius = radius 
         self.rescale()
         self.rect = self.image.get_rect(bottomleft=(self.x,self.y))
         Enemies.add(self)
@@ -131,20 +128,16 @@ class Enemy(pygame.sprite.Sprite):
     def find_player(self):
         x_dis = self.rect.x - self.player.rect.x 
         y_dis = self.rect.y - self.player.rect.y
-        if math.sqrt(x_dis**2 + y_dis**2)<=WIDTH/4:
+        if math.sqrt(x_dis**2 + y_dis**2)<=WIDTH/self.radius:
             if x_dis >0:
-                self.rect.x -= self.speed
-                self.dir = None  
+                self.rect.x -= self.speed                
             if x_dis<0:
-                self.rect.x +=self.speed
-                self.dir = None  
+                self.rect.x +=self.speed                  
             if y_dis>0:
-                self.rect.y -=self.speed
-                self.dir = None  
+                self.rect.y -=self.speed                  
             if y_dis<0:
                 self.rect.y +=self.speed
-                self.dir = None
-
+            self.dir = None                     
         else:
             if self.dir == None:
                 self.dir = random.choice(self.dirs)            
@@ -154,13 +147,13 @@ class Enemy(pygame.sprite.Sprite):
         self.find_player() 
         if self.dir!=None:
             if self.dir == 'n':
-                if self.rect.y - self.speed - self.size >0:
+                if self.rect.y - self.speed  >0:
                     self.rect.y -=self.speed
                 else:
                     self.dir = 's'    
                 
             elif self.dir == 's':
-                if self.rect.y + self.speed+self.size < HEIGHT:
+                if self.rect.y + self.speed < HEIGHT-self.size:
                     self.rect.y +=self.speed         
                 else:
                     self.dir ='n'
@@ -176,14 +169,8 @@ class Enemy(pygame.sprite.Sprite):
 
                     self.rect.x -=self.speed
                 else:
-                    self.dir = 'e'
-                
-            return
-        
-        
-
-
-                        
+                    self.dir = 'e'                
+            return                    
 
 class Game:
     def __init__(self):
@@ -195,8 +182,10 @@ class Game:
     def build_enemies(self):
         for _ in range(10):
             x = random.randint(100,WIDTH-100)
-            y = random.randint(100,HEIGHT-100)            
-            Enemy(self.player_sprite,x,y,1, ghost,75)
+            y = random.randint(100,HEIGHT-100)
+            r = random.randint(2,6)
+            s = random.uniform(1.0, 1.9)           
+            Enemy(self.player_sprite,x,y,s,r, ghost,75)
 
     def run(self):
         self.player_sprite.update()
