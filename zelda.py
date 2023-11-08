@@ -108,10 +108,12 @@ class Player(pygame.sprite.Sprite):
         self.blit()
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, x, y, image,size):
+    def __init__(self, player,x, y, speed,image,size):
         super().__init__()
+        self.player = player 
         self.x = x
         self.y = y
+        self.speed = speed
         self.size = size
         self.image = image
         self.rescale()
@@ -119,15 +121,30 @@ class Enemy(pygame.sprite.Sprite):
     def blit(self):
         screen.blit(self.image,self.rect)
     def rescale(self):
-        self.image = pygame.transform.scale(self.image, (self.size,self.size))    
+        self.image = pygame.transform.scale(self.image, (self.size,self.size))
+    def update(self):
+        x_dis = self.rect.x - self.player.rect.x 
+        y_dis = self.rect.y - self.player.rect.y
+        if x_dis >0:
+            self.rect.x -= self.speed 
+        if x_dis<0:
+            self.rect.x +=self.speed 
+        if y_dis>0:
+            self.rect.y -=self.speed 
+        if y_dis<0:
+            self.rect.y +=self.speed            
+
+        
+
 class Game:
     def __init__(self):
         self.player_sprite = Player(WIDTH/2, HEIGHT/2)
         self.player = pygame.sprite.GroupSingle(self.player_sprite)
-        self.enemy_sprite = Enemy(200,200,ghost,75)
+        self.enemy_sprite = Enemy(self.player_sprite,200,200,3, ghost,75)
         self.enemy = pygame.sprite.GroupSingle(self.enemy_sprite)
     def run(self):
         self.player_sprite.update()
+        self.enemy_sprite.update()
         self.enemy_sprite.blit()
 
 g = Game()
