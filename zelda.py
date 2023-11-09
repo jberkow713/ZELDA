@@ -149,17 +149,26 @@ class Enemy(pygame.sprite.Sprite):
     def rescale(self):
         self.image = pygame.transform.scale(self.image, (self.size,self.size))
     def find_player(self):
+        
         x_dis = self.rect.x - self.player.rect.x 
         y_dis = self.rect.y - self.player.rect.y
         if math.sqrt(x_dis**2 + y_dis**2)<=WIDTH/self.radius:
             if x_dis >0:
-                self.rect.x -= self.speed                
+                self.rect.x -= self.speed
+                if self.collide_lists([Enemies,Objs])==True:
+                    self.rect.x +=self.speed                 
             if x_dis<0:
-                self.rect.x +=self.speed                  
+                self.rect.x +=self.speed
+                if self.collide_lists([Enemies,Objs])==True:
+                    self.rect.x -=self.speed                     
             if y_dis>0:
-                self.rect.y -=self.speed                  
+                self.rect.y -=self.speed
+                if self.collide_lists([Enemies,Objs])==True:
+                    self.rect.y +=self.speed                     
             if y_dis<0:
                 self.rect.y +=self.speed
+                if self.collide_lists([Enemies,Objs])==True:
+                    self.rect.y -=self.speed   
             self.dir = None                                 
         else:
             if self.dir == None:
@@ -182,7 +191,7 @@ class Enemy(pygame.sprite.Sprite):
         return False      
     
     def update(self):
-        self.find_player() 
+        
         if self.dir!=None:            
             if self.dir == 'n':
                 if self.rect.y - self.speed  >0:                    
@@ -190,7 +199,7 @@ class Enemy(pygame.sprite.Sprite):
                     if self.collide_lists([Enemies,Objs])==False:
                         return
                     else:
-                        self.dir = 's'
+                        self.dir = random.choice(['s','w','e'])
                         self.rect.y +=self.speed 
                 else:
                     self.dir = 's'
@@ -201,7 +210,7 @@ class Enemy(pygame.sprite.Sprite):
                     if self.collide_lists([Enemies,Objs])==False:
                          return        
                     else:
-                        self.dir ='n'
+                        self.dir = random.choice(['n','w','e'])
                         self.rect.y -=self.speed
                 else:
                     self.dir ='n'         
@@ -212,7 +221,7 @@ class Enemy(pygame.sprite.Sprite):
                     if self.collide_lists([Enemies,Objs])==False:
                         return   
                     else:
-                        self.dir ='w'
+                        self.dir = random.choice(['s','w','n'])
                         self.rect.x -=self.speed 
                 else:
                     self.dir ='w'
@@ -222,7 +231,7 @@ class Enemy(pygame.sprite.Sprite):
                     if self.collide_lists([Enemies,Objs])==False:
                         return   
                     else:
-                        self.dir = 'e'
+                        self.dir = random.choice(['s','n','e'])
                         self.rect.x +=self.speed 
                 else:
                     self.dir = 'e'                        
@@ -247,7 +256,12 @@ class Game:
         Obj(WIDTH/2,25,wall,75,door=True)
         Obj(WIDTH/2,HEIGHT+50,wall,75,door=True)
         Obj(-50,HEIGHT/2,wall,75,door=True)
-        Obj(WIDTH-25,HEIGHT/2,wall,75,door=True)     
+        Obj(WIDTH-25,HEIGHT/2,wall,75,door=True)
+
+        for _ in range(5):
+            x = random.randint(100,WIDTH-100)
+            y = random.randint(100,HEIGHT-100)
+            Obj(x,y,tree,75)     
 
     def new_level(self):
         Enemies.empty()
@@ -262,6 +276,7 @@ class Game:
                 self.reset_timer = 50
         self.player.update()
         for enemy in self.enemies:
+            enemy.find_player()
             enemy.update()
             enemy.blit()
         for obj in Objs:
