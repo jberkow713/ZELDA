@@ -165,30 +165,67 @@ class Enemy(pygame.sprite.Sprite):
             if self.dir == None:
                 self.dir = random.choice(self.dirs)            
         return self.dir    
-
+    def collide(self,obj):
+        if self.rect.colliderect(obj.rect):
+            return True 
+        return False
+    def collide_list(self,list):
+        for i in list:
+            if self!=i:
+                if self.collide(i)==True:
+                    return True 
+        return False
+    def collide_lists(self,lists):
+        for l in lists:
+            if self.collide_list(l)==True:
+                return True 
+        return False      
+    
     def update(self):
         self.find_player() 
-        if self.dir!=None:
+        if self.dir!=None:            
             if self.dir == 'n':
-                if self.rect.y - self.speed  >0:
+                if self.rect.y - self.speed  >0:                    
                     self.rect.y -=self.speed
+                    if self.collide_lists([Enemies,Objs])==False:
+                        return
+                    else:
+                        self.dir = 's'
+                        self.rect.y +=self.speed 
                 else:
-                    self.dir = 's'               
+                    self.dir = 's'
+                                   
             elif self.dir == 's':
                 if self.rect.y + self.speed < HEIGHT-self.size:
-                    self.rect.y +=self.speed         
+                    self.rect.y +=self.speed
+                    if self.collide_lists([Enemies,Objs])==False:
+                         return        
+                    else:
+                        self.dir ='n'
+                        self.rect.y -=self.speed
                 else:
-                    self.dir ='n'                
+                    self.dir ='n'         
+
             elif self.dir == "e":
-                if self.rect.x + self.speed + self.size <WIDTH:
+                if self.rect.x + self.speed + self.size <WIDTH :
                     self.rect.x +=self.speed
+                    if self.collide_lists([Enemies,Objs])==False:
+                        return   
+                    else:
+                        self.dir ='w'
+                        self.rect.x -=self.speed 
                 else:
-                    self.dir ='w'                
+                    self.dir ='w'
             elif self.dir == "w":
                 if self.rect.x - self.speed >0:
                     self.rect.x -=self.speed
+                    if self.collide_lists([Enemies,Objs])==False:
+                        return   
+                    else:
+                        self.dir = 'e'
+                        self.rect.x +=self.speed 
                 else:
-                    self.dir = 'e'                
+                    self.dir = 'e'                        
             return                    
 
 class Game:
@@ -200,7 +237,7 @@ class Game:
         self.reset_timer = 50        
 
     def build_enemies(self):
-        for _ in range(10):
+        for _ in range(8):
             x = random.randint(100,WIDTH-100)
             y = random.randint(100,HEIGHT-100)
             r = random.randint(2,6)
