@@ -29,6 +29,8 @@ wall = pygame.image.load("Zelda_Wall.jpg").convert_alpha()
 heart = pygame.image.load("Heart.png").convert_alpha()
 weapon = pygame.image.load("Enemy_Weapon.jpg").convert_alpha()
 Enemies = pygame.sprite.Group()
+Objs = pygame.sprite.Group()
+
 
 class Sword:
     def __init__(self,x,y,image):
@@ -55,7 +57,11 @@ class Player(pygame.sprite.Sprite):
         self.speed = 5
         self.health = 100
         self.dir = None    
-    
+    def checkCollision(self, s2):
+        if self.rect.colliderect(s2.rect):
+            return True 
+        return False       
+
     def rescale(self):
         self.image = pygame.transform.scale(self.image, (self.size,self.size))
 
@@ -106,6 +112,23 @@ class Player(pygame.sprite.Sprite):
         self.move()
         self.blit()
 
+class Obj(pygame.sprite.Sprite):
+    def __init__(self,x,y,image,size,door=False):
+        super().__init__()
+        self.x = x
+        self.y = y 
+        self.size = size 
+        self.image = image
+        self.rescale()
+        self.rect = self.image.get_rect(bottomleft=(self.x,self.y))
+        Objs.add(self)
+        self.door = door 
+    def blit(self):
+        screen.blit(self.image,self.rect)
+    def rescale(self):
+        self.image = pygame.transform.scale(self.image, (self.size,self.size))
+        self.image.set_colorkey(BG_Color) 
+
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, player,x, y, speed,radius,image,size):
         super().__init__()
@@ -137,7 +160,7 @@ class Enemy(pygame.sprite.Sprite):
                 self.rect.y -=self.speed                  
             if y_dis<0:
                 self.rect.y +=self.speed
-            self.dir = None                     
+            self.dir = None                                 
         else:
             if self.dir == None:
                 self.dir = random.choice(self.dirs)            
@@ -150,23 +173,19 @@ class Enemy(pygame.sprite.Sprite):
                 if self.rect.y - self.speed  >0:
                     self.rect.y -=self.speed
                 else:
-                    self.dir = 's'    
-                
+                    self.dir = 's'               
             elif self.dir == 's':
                 if self.rect.y + self.speed < HEIGHT-self.size:
                     self.rect.y +=self.speed         
                 else:
-                    self.dir ='n'
-                
+                    self.dir ='n'                
             elif self.dir == "e":
                 if self.rect.x + self.speed + self.size <WIDTH:
                     self.rect.x +=self.speed
                 else:
-                    self.dir ='w'
-                
+                    self.dir ='w'                
             elif self.dir == "w":
                 if self.rect.x - self.speed >0:
-
                     self.rect.x -=self.speed
                 else:
                     self.dir = 'e'                
@@ -174,10 +193,11 @@ class Enemy(pygame.sprite.Sprite):
 
 class Game:
     def __init__(self):
-        self.player_sprite = Player(WIDTH/2, HEIGHT/2)
-        self.player = pygame.sprite.GroupSingle(self.player_sprite)
+        self.player= Player(WIDTH/2, HEIGHT/2)
         self.enemies = Enemies
         self.build_enemies()
+        self.reset = False
+        self.reset_timer = 50        
 
     def build_enemies(self):
         for _ in range(10):
@@ -185,13 +205,36 @@ class Game:
             y = random.randint(100,HEIGHT-100)
             r = random.randint(2,6)
             s = random.uniform(1.0, 1.9)           
-            Enemy(self.player_sprite,x,y,s,r, ghost,75)
+            Enemy(self.player,x,y,s,r, ghost,75)        
+        
+        Obj(WIDTH/2,25,wall,75,door=True)
+        Obj(WIDTH/2,HEIGHT+50,wall,75,door=True)
+        Obj(-50,HEIGHT/2,wall,75,door=True)
+        Obj(WIDTH-25,HEIGHT/2,wall,75,door=True)     
+
+    def new_level(self):
+        Enemies.empty()
+        Objs.empty()
+        self.build_enemies()
 
     def run(self):
-        self.player_sprite.update()
+        if self.reset == True:
+            self.reset_timer -=1
+            if self.reset_timer <=0:
+                self.reset = False 
+                self.reset_timer = 50
+        self.player.update()
         for enemy in self.enemies:
             enemy.update()
             enemy.blit()
+        for obj in Objs:
+            obj.blit()
+            if obj.door == True:
+                if self.player.checkCollision(obj):
+                    if self.reset == False:       
+                        self.new_level()
+                        self.reset = True                       
+
 g = Game()
 while True:
     for event in pygame.event.get():
